@@ -1,0 +1,169 @@
+/*
+ * Copyright (C) 2016 Algolux Inc.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and/or associated documentation files (the
+ * "Materials"), to deal in the Materials without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Materials, and to
+ * permit persons to whom the Materials are furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included
+ * in all copies or substantial portions of the Materials.
+ *
+ * THE MATERIALS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
+ */
+
+/*!
+ * \file
+ * \brief A Warp perspective example with OpenVX
+ * \author Emeric Vigier <emeric.vigier@algolux.com>
+ */
+
+#include <assert.h>
+#include <stdio.h>
+#include <VX/vx.h>
+#include <VX/vxu.h>
+#include <VX/vx_lib_debug.h>
+#include <VX/vx_helper.h>
+
+#define IMAGE_WIDTH  512
+#define IMAGE_HEIGHT 512
+
+#define CHECK_ALL_ITEMS(array, iter, status, label) { \
+    status = VX_SUCCESS; \
+    for ((iter) = 0; (iter) < dimof(array); (iter)++) { \
+        if ((array)[(iter)] == 0) { \
+            printf("Item %u in "#array" is null!\n", (iter)); \
+            assert((array)[(iter)] != 0); \
+            status = VX_ERROR_NOT_SUFFICIENT; \
+        } \
+    } \
+    if (status != VX_SUCCESS) { \
+        goto label; \
+    } \
+}
+
+void usage(const char *prg) {
+    printf("USAGE: %s <input-img>\n", prg);
+}
+
+int main(int argc, char **argv) {
+    vx_context ctx = NULL;
+    vx_status ret = VX_FAILURE;
+    vx_uint32 width = IMAGE_WIDTH, height = IMAGE_HEIGHT;
+    vx_image src = NULL, dst = NULL;
+    vx_graph graph = NULL;
+    int i;
+
+    if (argc < 2) {
+        usage(argv[0]);
+        ret = -1;
+        goto end;
+    }
+
+    vx_char *srcfilename = argv[1];
+    vx_char *dstfilename = "./lena_out.pgm";
+    printf("src img: %s\n", srcfilename);
+    printf("dst img: %s\n", dstfilename);
+
+    // create context
+    ctx = vxCreateContext();
+    if (!ctx) {
+        fprintf(stderr, "error: vxCreateContext %d\n", ret);
+        ret = -1;
+        goto end;
+    }
+
+    // create source image
+    src = vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8);
+    ret = vxGetStatus((vx_reference)src);
+    if (ret != VX_SUCCESS) {
+        fprintf(stderr, "error: vxCreateImage src %d\n", ret);
+        goto relCtx;
+    }
+
+    // create destination image
+    dst = vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8);
+    ret = vxGetStatus((vx_reference)dst);
+    if (ret != VX_SUCCESS) {
+        fprintf(stderr, "error: vxCreateImage dst %d\n", ret);
+        goto relImg;
+    }
+
+    // required in order to use vxFReadImageNode
+    ret = vxLoadKernels(ctx, "openvx-debug");
+    ret |= vxLoadKernels(ctx, "openvx-extras");
+
+    // create graph
+    graph = vxCreateGraph(ctx);
+    ret = vxGetStatus((vx_reference)graph);
+    if (ret != VX_SUCCESS) {
+        fprintf(stderr, "error: vxCreateGraph %d\n", ret);
+        goto relImg;
+    }
+
+    //! [warp perspective]
+    // x0 = a x + b y + c;
+    // y0 = d x + e y + f;
+    // z0 = g x + h y + i;
+    vx_float32 mat[3][3] = {
+        {0.98f, -0.17f, 0.0f}, // 'x' coefficients
+        {0.17f,  0.98f, 0.0f}, // 'y' coefficients
+        {0.0f,   0.0f,  1.0f}, // offsets
+    };
+
+    vx_matrix matrix = vxCreateMatrix(ctx, VX_TYPE_FLOAT32, 3, 3);
+    vxWriteMatrix(matrix, mat);
+
+    // the pipeline ordering
+    vx_node nodes[] = {
+        vxFReadImageNode(graph, "lena_512x512.pgm", src),
+        vxWarpPerspectiveNode(graph, src, matrix,
+            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, dst),
+        vxFWriteImageNode(graph, dst, dstfilename),
+    };
+    CHECK_ALL_ITEMS(nodes, i, ret, relMat);
+
+//    ret = vx_useImmediateBorderMode(ctx, node[1]);
+//    if (ret != VX_SUCCESS) {
+//        fprintf(stderr, "error: vx_useImmediateBorderMode %d\n", ret);
+//        goto relGraph;
+//    }
+
+    ret = vxVerifyGraph(graph);
+    if (ret != VX_SUCCESS) {
+        fprintf(stderr, "error: vxWarpPerspectiveNode %d\n", ret);
+        goto relNod;
+    }
+
+    ret = vxProcessGraph(graph);
+
+relNod:
+    for (i = 0; i < dimof(nodes); ++i) {
+        vxReleaseNode(&nodes[i]);
+    }
+relMat:
+    vxReleaseMatrix(&matrix);
+    vxReleaseGraph(&graph);
+relImg:
+    vxReleaseImage(&src);
+    vxReleaseImage(&dst);
+relCtx:
+    ret = vxReleaseContext(&ctx);
+    if (ret != VX_SUCCESS) {
+        fprintf(stderr, "error: vxReleaseContext %d\n", ret);
+        goto end;
+    }
+
+     ret = 0;
+end:
+    return ret;
+}
