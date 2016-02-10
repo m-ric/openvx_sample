@@ -52,7 +52,7 @@ vx_graph vxPyramidIntegral(vx_context context, vx_image image, vx_threshold thre
     vx_uint32 width, height, i;
     vxQueryImage(image, VX_IMAGE_ATTRIBUTE_WIDTH, &width, sizeof(width));
     vxQueryImage(image, VX_IMAGE_ATTRIBUTE_HEIGHT, &height, sizeof(height));
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_pyramid pyr = vxCreatePyramid(context, 4, 0.5f, width, height, VX_DF_IMAGE_U8);
         vx_uint32 shift16 = 16, shift8 = 8;
@@ -88,7 +88,7 @@ vx_graph vxPyramidIntegral(vx_context context, vx_image image, vx_threshold thre
 vx_graph vxPseudoCannyGraph(vx_context context, vx_image input, vx_threshold thresh, vx_image output)
 {
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_uint32 n = 0;
         vx_image virts[] = {
@@ -471,7 +471,7 @@ int main(int argc, char *argv[])
             // output is the RGB image
             graph = vxPseudoCannyGraph(context, images[0], thresh, images[dimof(captures)]);
             //graph = vxPyramidIntegral(context, images[0], thresh, images[dimof(captures)]);
-            if (graph) {
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS) {
                 status = vxVerifyGraph(graph);
                 if (status != VX_SUCCESS) {
                     printf("Graph failed verification!\n");

@@ -127,7 +127,7 @@ static vx_param_description_t binary_bitwise_kernel_params[] = {
     {VX_OUTPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},
 };
 
-static vx_status VX_CALLBACK vxAndKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxAndKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -150,7 +150,7 @@ vx_kernel_description_t and_kernel = {
     NULL,
 };
 
-static vx_status VX_CALLBACK vxOrKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxOrKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -173,7 +173,7 @@ vx_kernel_description_t or_kernel = {
     NULL,
 };
 
-static vx_status VX_CALLBACK vxXorKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxXorKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -254,7 +254,7 @@ static vx_param_description_t unary_bitwise_kernel_params[] = {
 };
 
 
-static vx_status VX_CALLBACK vxNotKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxNotKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 2)
     {

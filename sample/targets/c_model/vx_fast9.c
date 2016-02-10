@@ -34,7 +34,7 @@
 #include <c_model.h>
 
 
-static vx_status VX_CALLBACK vxFast9CornersKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxFast9CornersKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 5)
@@ -91,7 +91,7 @@ static vx_status VX_CALLBACK vxFast9InputValidator(vx_node node, vx_uint32 index
                 if (type == VX_TYPE_FLOAT32)
                 {
                     vx_float32 k = 0.0f;
-                    status = vxAccessScalarValue(sens, &k);
+                    status = vxReadScalarValue(sens, &k);
                     if ((status == VX_SUCCESS) && (k > 0) && (k < 256))
                     {
                         status = VX_SUCCESS;
@@ -124,7 +124,7 @@ static vx_status VX_CALLBACK vxFast9InputValidator(vx_node node, vx_uint32 index
                 if (type == VX_TYPE_BOOL)
                 {
                     vx_bool nonmax = vx_false_e;
-                    status = vxAccessScalarValue(s_nonmax, &nonmax);
+                    status = vxReadScalarValue(s_nonmax, &nonmax);
                     if ((status == VX_SUCCESS) && ((nonmax == vx_false_e) ||
                                                    (nonmax == vx_true_e)))
                     {
@@ -159,7 +159,7 @@ static vx_status VX_CALLBACK vxFast9OutputValidator(vx_node node, vx_uint32 inde
     }
     else if (index == 4)
     {
-        ptr->dim.scalar.type = VX_TYPE_UINT32;
+        ptr->dim.scalar.type = VX_TYPE_SIZE;
         status = VX_SUCCESS;
     }
     return status;
@@ -180,4 +180,6 @@ vx_kernel_description_t fast9_kernel = {
     fast9_kernel_params, dimof(fast9_kernel_params),
     vxFast9InputValidator,
     vxFast9OutputValidator,
+    NULL,
+    NULL,
 };

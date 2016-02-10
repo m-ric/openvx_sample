@@ -84,12 +84,12 @@ void vxPrintScalarValue(vx_scalar scalar)
     }
 }
 
-VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum data_type, void *ptr)
+VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum data_type, const void *ptr)
 {
     vx_scalar scalar = NULL;
 
     if (vxIsValidContext(context) == vx_false_e)
-        return 0;
+        return NULL;
 
     if (!VX_TYPE_IS_SCALAR(data_type))
     {
@@ -100,12 +100,13 @@ VX_API_ENTRY vx_scalar VX_API_CALL vxCreateScalar(vx_context context, vx_enum da
     else
     {
         scalar = (vx_scalar)vxCreateReference(context, VX_TYPE_SCALAR, VX_EXTERNAL, &context->base);
-        if (scalar && scalar->base.type == VX_TYPE_SCALAR)
+        if (vxGetStatus((vx_reference)scalar) == VX_SUCCESS && scalar->base.type == VX_TYPE_SCALAR)
         {
             scalar->data_type = data_type;
-            vxCommitScalarValue(scalar, ptr);
+            vxWriteScalarValue(scalar, ptr);
         }
     }
+
     return (vx_scalar)scalar;
 }
 
@@ -141,7 +142,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryScalar(vx_scalar scalar, vx_enum attri
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxAccessScalarValue(vx_scalar scalar, void *ptr)
+VX_API_ENTRY vx_status VX_API_CALL vxReadScalarValue(vx_scalar scalar, void *ptr)
 {
     vx_status status = VX_SUCCESS;
 
@@ -215,7 +216,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxAccessScalarValue(vx_scalar scalar, void *p
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxCommitScalarValue(vx_scalar scalar, void *ptr)
+VX_API_ENTRY vx_status VX_API_CALL vxWriteScalarValue(vx_scalar scalar, const void *ptr)
 {
     vx_status status = VX_SUCCESS;
 

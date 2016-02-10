@@ -144,7 +144,8 @@ vx_status vxFReadImage(vx_array file, vx_image output)
     vx_char *filename = NULL;
     vx_size filename_stride = 0;
     vx_uint8 *src = NULL;
-    vx_uint32 p = 0u, y = 0u, planes = 0u;
+    vx_uint32 p = 0u, y = 0u;
+    vx_size planes = 0u;
     vx_imagepatch_addressing_t addr = {0};
     vx_df_image format = VX_DF_IMAGE_VIRT;
     FILE *fp = NULL;

@@ -25,9 +25,58 @@
 #include <VX/vx_lib_extras.h>
 #include <math.h>
 #include <extras_k.h>
+#include <stdlib.h>
+
+struct kp_elem {
+    int x;
+    int y;
+    vx_float32 resp;
+};
+
+void swap(struct kp_elem *x, struct kp_elem *y)
+{
+    struct kp_elem temp;
+    temp = *x;
+    *x = *y;
+    *y = temp;
+}
+
+int choose_pivot(int i,int j )
+{
+    return((i+j) /2);
+}
+
+void quicksort(struct kp_elem list[], int m, int n)
+{
+    int i, j, k;
+    struct kp_elem key;
+    if ( m < n )
+    {
+        k = choose_pivot(m,n);
+        swap(&list[m],&list[k]);
+        key = list[m];
+        i = m+1;
+        j = n;
+        while(i <= j)
+        {
+            while((i <= n) && (list[i].resp >= key.resp))
+                i++;
+            while((j >= m) && (list[j].resp < key.resp))
+                j--;
+            if( i < j)
+                swap(&list[i],&list[j]);
+        }
+        /* swap two elements */
+        swap(&list[m],&list[j]);
+
+        /* recursively sort the lesser list */
+        quicksort(list,m,j-1);
+        quicksort(list,j+1,n);
+    }
+}
 
 // nodeless version of the EuclideanNonMaxSuppression kernel
-vx_status vxEuclideanNonMaxSuppression(vx_image src, vx_scalar thr, vx_scalar rad, vx_image dst)
+vx_status vxEuclideanNonMaxSuppressionHarris(vx_image src, vx_scalar thr, vx_scalar rad, vx_image dst)
 {
     vx_status status = VX_SUCCESS;
     void *src_base = NULL, *dst_base = NULL;
@@ -35,120 +84,98 @@ vx_status vxEuclideanNonMaxSuppression(vx_image src, vx_scalar thr, vx_scalar ra
     vx_float32 radius = 0.0f;
     vx_int32 r = 0;
     vx_float32 thresh = 0;
-    vx_int32 threshold = 0;
     vx_rectangle_t rect;
     vx_df_image format = VX_DF_IMAGE_VIRT;
 
     status = vxGetValidRegionImage(src, &rect);
-    status |= vxAccessScalarValue(rad, &radius);
-    status |= vxAccessScalarValue(thr, &thresh);
+    status |= vxReadScalarValue(rad, &radius);
+    status |= vxReadScalarValue(thr, &thresh);
     status |= vxQueryImage(src, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
     status |= vxAccessImagePatch(src, &rect, 0, &src_addr, &src_base, VX_READ_ONLY);
     status |= vxAccessImagePatch(dst, &rect, 0, &dst_addr, &dst_base, VX_WRITE_ONLY);
     r = (vx_uint32)radius;
     r = (r <=0 ? 1 : r);
-    threshold = (vx_int32)thresh;
     if (status == VX_SUCCESS)
     {
-        vx_uint32 y, x;
+        vx_int32 y, x;
         vx_int32 i, j;
         vx_float32 d = 0;
-        for (y = 0; y < src_addr.dim_y; y++)
-        {
-            for (x = 0; x < src_addr.dim_x; x++)
-            {
-                if (format == VX_DF_IMAGE_S32)
-                {
-                    vx_int32 max = 0;
-                    vx_int32 *ptr = vxFormatImagePatchAddress2d(src_base, x, y, &src_addr);
-                    vx_int32 *out = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
-                    if ((*ptr) < threshold)
-                    {
-                        *out = 0.f;
-                        continue;
-                    }
-                    //printf("src(%d,%d) = %d > %d (r2=%u)\n",x,y,*ptr,threshold,r2);
-                    for (j = -r; j <= r; j++)
-                    {
-                        if ((y+j < 0) || (y+j >= src_addr.dim_y))
-                        {
-                            continue;
-                        }
-                        for (i = -r; i <= r; i++)
-                        {
-                            if ((x+i < 0) || (x+i >= src_addr.dim_x))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                vx_int32 dx = (x - (x+i));
-                                vx_int32 dy = (y - (y+j));
-                                d = sqrtf((vx_float32)((dx*dx) + (dy*dy)));
-                                //printf("{%d,%d} is %lf from {%d,%d} radius=%lf\n",x+i,y+j,d,x,y,radius);
-                                if (d < radius)
-                                {
-                                    vx_int32 *non = vxFormatImagePatchAddress2d(src_base, x+i, y+j, &src_addr);
-                                    //printf("src(%d,%d) = %d ? %d\n",x+i,y+j,(*non),max);
-                                    if (max < (*non))
-                                        max = (*non);
-                                }
-                            }
-                        }
-                    }
-                    //printf("src(%d,%d) = %d ? %d\n",x+i,y+j,(*ptr),max);
-                    if ((*ptr) == max)
-                        *out = *ptr;
-                    else
-                        *out = 0;
-                }
-                else if (format == VX_DF_IMAGE_F32)
-                {
-                    vx_float32 max = 0.0f;
+        int n = 0;
+
+        struct kp_elem *kp_list = (struct kp_elem *)malloc(src_addr.dim_x*src_addr.dim_y*sizeof(struct kp_elem));
+        int nb_kp = 0;
+
+        for (y = 0; y < src_addr.dim_y; y++){
+            for (x = 0; x < src_addr.dim_x; x++) {
+                // Init to 0
+                vx_int32 *out = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
+                *out = 0;
+
+                // Fast non max suppression & keypoint list building
+                if ( (x>0) && (x<src_addr.dim_x-1) &&
+                     (y>0) && (y<src_addr.dim_y-1) ) {
                     vx_float32 *ptr = vxFormatImagePatchAddress2d(src_base, x, y, &src_addr);
-                    vx_float32 *out = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
-                    if ((*ptr) < thresh)
-                    {
-                        *out = 0.f;
-                        continue;
+                    vx_float32 *ptr99 = vxFormatImagePatchAddress2d(src_base, x-1, y-1, &src_addr);
+                    vx_float32 *ptr90 = vxFormatImagePatchAddress2d(src_base, x, y-1, &src_addr);
+                    vx_float32 *ptr91 = vxFormatImagePatchAddress2d(src_base, x+1, y-1, &src_addr);
+                    vx_float32 *ptr09 = vxFormatImagePatchAddress2d(src_base, x-1, y, &src_addr);
+                    vx_float32 *ptr01 = vxFormatImagePatchAddress2d(src_base, x+1, y, &src_addr);
+                    vx_float32 *ptr19 = vxFormatImagePatchAddress2d(src_base, x-1, y+1, &src_addr);
+                    vx_float32 *ptr10 = vxFormatImagePatchAddress2d(src_base, x, y+1, &src_addr);
+                    vx_float32 *ptr11 = vxFormatImagePatchAddress2d(src_base, x+1, y+1, &src_addr);
+                    if ( (*ptr >= thresh) &&
+                         ((*ptr >= *ptr99) &&
+                          (*ptr >= *ptr90) &&
+                          (*ptr >= *ptr91) &&
+                          (*ptr >= *ptr09) &&
+                          (*ptr > *ptr01) &&
+                          (*ptr > *ptr19) &&
+                          (*ptr > *ptr10) &&
+                          (*ptr > *ptr11))
+                         ) {
+                        kp_list[nb_kp].x = x;
+                        kp_list[nb_kp].y = y;
+                        kp_list[nb_kp].resp = *ptr;
+                        nb_kp++;
                     }
-                    //printf("src(%d,%d) = %d > %d (r2=%u)\n",x,y,*ptr,threshold,r2);
-                    for (j = -r; j <= r; j++)
-                    {
-                        if ((y+j < 0) || (y+j >= src_addr.dim_y))
-                        {
-                            continue;
-                        }
-                        for (i = -r; i <= r; i++)
-                        {
-                            if ((x+i < 0) || (x+i >= src_addr.dim_x))
-                            {
-                                continue;
-                            }
-                            else
-                            {
-                                vx_float32 dx = (vx_float32)(x - (x+i));
-                                vx_float32 dy = (vx_float32)(y - (y+j));
-                                d = sqrtf((dx*dx) + (dy*dy));
-                                //printf("{%d,%d} is %lf from {%d,%d} radius=%lf\n",x+i,y+j,d,x,y,radius);
-                                if (d < radius)
-                                {
-                                    vx_float32 *non = vxFormatImagePatchAddress2d(src_base, x+i, y+j, &src_addr);
-                                    //printf("src(%d,%d) = %d ? %d\n",x+i,y+j,(*non),max);
-                                    if (max < (*non))
-                                        max = (*non);
-                                }
-                            }
-                        }
-                    }
-                    //printf("src(%d,%d) = %d ? %d\n",x+i,y+j,(*ptr),max);
-                    if ((*ptr) == max)
-                        *out = *ptr;
-                    else
-                        *out = 0;
                 }
             }
         }
+
+        // Sort keypoints
+        quicksort(kp_list, 0,nb_kp-1);
+
+        // Enclidean norm
+        for(n = 0; n<nb_kp; n++) {
+            int found = 0;
+            x = kp_list[n].x;
+            y = kp_list[n].y;
+            //printf("src(%d,%d) = %d > %d (r2=%u)\n",x,y,*ptr,threshold,r2);
+            for (j = -r; j <= r; j++) {
+                if ((y+j >= 0) && (y+j < src_addr.dim_y)) {
+                    for (i = -r; i <= r; i++) {
+                        if ((x+i >= 0) && (x+i < src_addr.dim_x)) {
+                            vx_float32 dx = i;
+                            vx_float32 dy = j;
+                            d = sqrtf((dx*dx) + (dy*dy));
+                            //printf("{%d,%d} is %lf from {%d,%d} radius=%lf\n",x+i,y+j,d,x,y,radius);
+                            if (d < radius) {
+                                vx_float32 *non = vxFormatImagePatchAddress2d(dst_base, x+i, y+j, &dst_addr);
+                                if (*non) {
+                                    found = 1;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (found == 0) {
+                vx_float32 *out = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
+                *out = kp_list[n].resp;
+            }
+        }
+        free(kp_list);
     }
     status |= vxCommitImagePatch(src, NULL, 0, &src_addr, src_base);
     status |= vxCommitImagePatch(dst, &rect, 0, &dst_addr, dst_base);

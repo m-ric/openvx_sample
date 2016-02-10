@@ -64,14 +64,14 @@ int main(int argc, char *argv[])
 {
     vx_status status = VX_SUCCESS;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_image images[] = {
                 vxCreateImage(context, 640, 480, VX_DF_IMAGE_U8),
                 vxCreateImage(context, 640, 480, VX_DF_IMAGE_S16),
         };
         vx_graph graph = vxGraphFactory(context, VX_GRAPH_FACTORY_EDGE);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 p, num = 0;
             status |= vxQueryGraph(graph, VX_GRAPH_ATTRIBUTE_NUMPARAMETERS, &num, sizeof(num));

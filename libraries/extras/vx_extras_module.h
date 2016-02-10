@@ -35,7 +35,7 @@ extern "C" {
 #endif
 
 extern vx_kernel_description_t edge_trace_kernel;
-extern vx_kernel_description_t euclidian_nonmax_kernel;
+extern vx_kernel_description_t euclidian_nonmax_harris_kernel;
 extern vx_kernel_description_t harris_score_kernel;
 extern vx_kernel_description_t laplacian3x3_kernel;
 extern vx_kernel_description_t lister_kernel;

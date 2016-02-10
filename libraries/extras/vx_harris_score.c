@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Copyright (c) 2012-2014 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -31,23 +31,25 @@
 #include <VX/vx_lib_extras.h>
 #include <VX/vx_helper.h>
 
-static vx_status VX_CALLBACK vxHarrisScoreKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxHarrisScoreKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
-    if (num == 5)
+    if (num == 6)
     {
         vx_image grad_x = (vx_image)parameters[0];
         vx_image grad_y = (vx_image)parameters[1];
         vx_scalar sens = (vx_scalar)parameters[2];
-        vx_scalar winds = (vx_scalar)parameters[3];
-        vx_image dst = (vx_image)parameters[4];
+        vx_scalar grad_s = (vx_scalar)parameters[3];
+        vx_scalar winds = (vx_scalar)parameters[4];
+        vx_image dst = (vx_image)parameters[5];
         vx_float32 k = 0.0f;
-        vx_uint32 block_size = 0;
+        vx_uint32 block_size = 0, grad_size = 0;
         vx_rectangle_t rect;
 
         status = vxGetValidRegionImage(grad_x, &rect);
-        status |= vxAccessScalarValue(winds, &block_size);
-        status |= vxAccessScalarValue(sens, &k);
+        status |= vxReadScalarValue(grad_s, &grad_size);
+        status |= vxReadScalarValue(winds, &block_size);
+        status |= vxReadScalarValue(sens, &k);
         if (status == VX_SUCCESS)
         {
             vx_int32 y, x, i, j;
@@ -62,6 +64,8 @@ static vx_status VX_CALLBACK vxHarrisScoreKernel(vx_node node, vx_reference *par
             /*! \todo implement other Harris Corners border modes */
             if (borders.mode == VX_BORDER_MODE_UNDEFINED)
             {
+                double scale = 1.0 / ((1<<(grad_size-1))* block_size * 255.0);
+
                 vx_int32 b = (block_size/2) + 1;
                 vx_int32 b2 = (block_size/2);
                 if (status != VX_SUCCESS)
@@ -71,12 +75,12 @@ static vx_status VX_CALLBACK vxHarrisScoreKernel(vx_node node, vx_reference *par
                 {
                     for (x = b; x < (vx_int32)(gx_addr.dim_x - b); x++)
                     {
-                        vx_int32 sum_ix2 = 0;
-                        vx_int32 sum_iy2 = 0;
-                        vx_int32 sum_ixy = 0;
-                        vx_int64 det_A = 0;
-                        vx_int64 trace_A = 0, ktrace_A2 = 0;
-                        vx_int64 M_c = 0;
+                        double sum_ix2 = 0;
+                        double sum_iy2 = 0;
+                        double sum_ixy = 0;
+                        double det_A = 0;
+                        double trace_A = 0, ktrace_A2 = 0;
+                        double M_c = 0;
                         vx_float32 *pmc = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
                         for (j = -b2; j <= b2; j++)
                         {
@@ -84,16 +88,16 @@ static vx_status VX_CALLBACK vxHarrisScoreKernel(vx_node node, vx_reference *par
                             {
                                 vx_int16 *pgx = vxFormatImagePatchAddress2d(gx_base, x+i, y+j, &gx_addr);
                                 vx_int16 *pgy = vxFormatImagePatchAddress2d(gy_base, x+i, y+j, &gy_addr);
-                                vx_int16 gx = *pgx;
-                                vx_int16 gy = *pgy;
-                                sum_ix2 += gx * gx;
-                                sum_iy2 += gy * gy;
-                                sum_ixy += gx * gy;
+                                vx_float32 gx = ((vx_float32)*pgx);
+                                vx_float32 gy = ((vx_float32)*pgy);
+                                sum_ix2 += gx * gx*scale*scale;
+                                sum_iy2 += gy * gy*scale*scale;
+                                sum_ixy += gx * gy*scale*scale;
                             }
                         }
-                        det_A = ((vx_int64)sum_ix2 * sum_iy2) - ((vx_int64)sum_ixy * sum_ixy);
-                        trace_A = (vx_int64)sum_ix2 + sum_iy2;
-                        ktrace_A2 = (vx_int64)(k * (trace_A * trace_A));
+                        det_A = (sum_ix2 * sum_iy2) - (sum_ixy * sum_ixy);
+                        trace_A = sum_ix2 + sum_iy2;
+                        ktrace_A2 = (k * (trace_A * trace_A));
                         M_c = det_A - ktrace_A2;
                         *pmc = (vx_float32)M_c;
 #if 0
@@ -179,7 +183,37 @@ static vx_status VX_CALLBACK vxHarrisScoreInputValidator(vx_node node, vx_uint32
                 if (stype == VX_TYPE_INT32)
                 {
                     vx_int32 size = 0;
-                    vxAccessScalarValue(scalar, &size);
+                    vxReadScalarValue(scalar, &size);
+                    size = 1 << (size - 1);
+                    if (size == 4 || size == 16 || size == 64)
+                    {
+                        status = VX_SUCCESS;
+                    }
+                }
+                else
+                {
+                    status = VX_ERROR_INVALID_TYPE;
+                }
+                vxReleaseScalar(&scalar);
+            }
+            vxReleaseParameter(&param);
+        }
+    }
+    else if (index == 4)
+    {
+        vx_parameter param = vxGetParameterByIndex(node, index);
+        if (param)
+        {
+            vx_scalar scalar = 0;
+            vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &scalar, sizeof(scalar));
+            if (scalar)
+            {
+                vx_enum stype = 0;
+                vxQueryScalar(scalar, VX_SCALAR_ATTRIBUTE_TYPE, &stype, sizeof(stype));
+                if (stype == VX_TYPE_INT32)
+                {
+                    vx_int32 size = 0;
+                    vxReadScalarValue(scalar, &size);
                     if (size == 3 || size == 5 || size == 7)
                     {
                         status = VX_SUCCESS;
@@ -200,7 +234,7 @@ static vx_status VX_CALLBACK vxHarrisScoreInputValidator(vx_node node, vx_uint32
 static vx_status VX_CALLBACK vxHarrisScoreOutputValidator(vx_node node, vx_uint32 index, vx_meta_format meta)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
-    if (index == 4)
+    if (index == 5)
     {
         vx_image input = 0;
         vx_parameter param = vxGetParameterByIndex(node, 0); /* we reference the input image */
@@ -230,6 +264,7 @@ static vx_status VX_CALLBACK vxHarrisScoreOutputValidator(vx_node node, vx_uint3
 static vx_param_description_t harrisscore_kernel_params[] = {
     {VX_INPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},
     {VX_INPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},
+    {VX_INPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_REQUIRED},
     {VX_INPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_REQUIRED},
     {VX_INPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_REQUIRED},
     {VX_OUTPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},

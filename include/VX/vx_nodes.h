@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2012-2014 The Khronos Group Inc.
+* Copyright (c) 2012-2015 The Khronos Group Inc.
 *
 * Permission is hereby granted, free of charge, to any person obtaining a
 * copy of this software and/or associated documentation files (the
@@ -28,7 +28,6 @@
  * \file vx_nodes.h
  * \brief The "Simple" API interface for OpenVX. These APIs are just
  * wrappers around the more verbose functions defined in <tt>\ref vx_api.h</tt>.
- * \author Erik Rainey <erik.rainey@gmail.com>
  */
 
 #ifdef __cplusplus
@@ -42,8 +41,7 @@ extern "C" {
  * \see <tt>VX_KERNEL_COLOR_CONVERT</tt>
  * \ingroup group_vision_function_colorconvert
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle..
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxColorConvertNode(vx_graph graph, vx_image input, vx_image output);
 
@@ -55,8 +53,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxColorConvertNode(vx_graph graph, vx_image inp
  * <tt>\see VX_KERNEL_CHANNEL_EXTRACT</tt>
  * \ingroup group_vision_function_channelextract
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
                              vx_image input,
@@ -73,8 +70,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelExtractNode(vx_graph graph,
  * \see <tt>VX_KERNEL_CHANNEL_COMBINE</tt>
  * \ingroup group_vision_function_channelcombine
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxChannelCombineNode(vx_graph graph,
                              vx_image plane0,
@@ -91,8 +87,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxChannelCombineNode(vx_graph graph,
  * \see <tt>VX_KERNEL_PHASE</tt>
  * \ingroup group_vision_function_phase
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode(vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image orientation);
 
@@ -104,8 +99,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxPhaseNode(vx_graph graph, vx_image grad_x, vx
  * \see <tt>VX_KERNEL_SOBEL_3x3</tt>
  * \ingroup group_vision_function_sobel3x3
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, vx_image output_x, vx_image output_y);
 
@@ -118,23 +112,21 @@ VX_API_ENTRY vx_node VX_API_CALL vxSobel3x3Node(vx_graph graph, vx_image input, 
  * \see <tt>VX_KERNEL_MAGNITUDE</tt>
  * \ingroup group_vision_function_magnitude
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxMagnitudeNode(vx_graph graph, vx_image grad_x, vx_image grad_y, vx_image mag);
 
 /*! \brief [Graph] Creates a Scale Image Node.
  * \param [in] graph The reference to the graph.
- * \param [in] src The source image.
- * \param [out] dst The destination image.
+ * \param [in] src The source image of type <tt>\ref VX_DF_IMAGE_U8</tt>.
+ * \param [out] dst The destination image of type <tt>\ref VX_DF_IMAGE_U8</tt>.
  * \param [in] type The interpolation type to use. \see vx_interpolation_type_e.
  * \ingroup group_vision_function_scale_image
  * \note The destination image must have a defined size and format. Only 
  *  <tt>\ref VX_NODE_ATTRIBUTE_BORDER_MODE</tt> value <tt>\ref VX_BORDER_MODE_UNDEFINED</tt>, 
  *  <tt>\ref VX_BORDER_MODE_REPLICATE</tt> or <tt>\ref VX_BORDER_MODE_CONSTANT</tt> is supported.
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxScaleImageNode(vx_graph graph, vx_image src, vx_image dst, vx_enum type);
 
@@ -145,8 +137,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxScaleImageNode(vx_graph graph, vx_image src, 
  * \param [out] output The output image of type <tt>\ref VX_DF_IMAGE_U8</tt>.
  * \ingroup group_vision_function_lut
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxTableLookupNode(vx_graph graph, vx_image input, vx_lut lut, vx_image output);
 
@@ -156,8 +147,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxTableLookupNode(vx_graph graph, vx_image inpu
  * \param [out] distribution The output distribution.
  * \ingroup group_vision_function_histogram
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxHistogramNode(vx_graph graph, vx_image input, vx_distribution distribution);
 
@@ -167,20 +157,17 @@ VX_API_ENTRY vx_node VX_API_CALL vxHistogramNode(vx_graph graph, vx_image input,
  * \param [out] output The grayscale output image of type <tt>\ref VX_DF_IMAGE_U8</tt> with equalized brightness and contrast.
  * \ingroup group_vision_function_equalize_hist
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxEqualizeHistNode(vx_graph graph, vx_image input, vx_image output);
 
 /*! \brief [Graph] Creates an AbsDiff node.
  * \param [in] graph The reference to the graph.
- * \param [in] in1 An input image in <tt>\ref VX_DF_IMAGE_U8</tt>
- * \param [in] in2 An input image in <tt>\ref VX_DF_IMAGE_U8</tt>
- * \param [out] out The output image in <tt>\ref VX_DF_IMAGE_U8</tt>
+ * \param [in] in1 An input image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
+ * \param [in] in2 An input image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
+ * \param [out] out The output image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
  * \ingroup group_vision_function_absdiff
- * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out);
 
@@ -191,8 +178,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAbsDiffNode(vx_graph graph, vx_image in1, vx_
  * \param [out] stddev The <tt>\ref VX_TYPE_FLOAT32</tt> standard deviation of the pixel values.
  * \ingroup group_vision_function_meanstddev
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxMeanStdDevNode(vx_graph graph, vx_image input, vx_scalar mean, vx_scalar stddev);
 
@@ -204,8 +190,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxMeanStdDevNode(vx_graph graph, vx_image input
  * \param [out] output The output Boolean image. Values are either 0 or 255.
  * \ingroup group_vision_function_threshold
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input, vx_threshold thresh, vx_image output);
 
@@ -215,8 +200,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxThresholdNode(vx_graph graph, vx_image input,
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U32</tt> format.
  * \ingroup group_vision_function_integral_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxIntegralImageNode(vx_graph graph, vx_image input, vx_image output);
 
@@ -226,8 +210,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxIntegralImageNode(vx_graph graph, vx_image in
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> format.
  * \ingroup group_vision_function_erode_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input, vx_image output);
 
@@ -237,8 +220,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxErode3x3Node(vx_graph graph, vx_image input, 
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> format.
  * \ingroup group_vision_function_dilate_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input, vx_image output);
 
@@ -248,8 +230,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxDilate3x3Node(vx_graph graph, vx_image input,
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> format.
  * \ingroup group_vision_function_median_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input, vx_image output);
 
@@ -259,8 +240,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxMedian3x3Node(vx_graph graph, vx_image input,
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> format.
  * \ingroup group_vision_function_box_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input, vx_image output);
 
@@ -270,8 +250,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxBox3x3Node(vx_graph graph, vx_image input, vx
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> format.
  * \ingroup group_vision_function_gaussian_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph, vx_image input, vx_image output);
 
@@ -282,8 +261,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussian3x3Node(vx_graph graph, vx_image inpu
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
  * \ingroup group_vision_function_custom_convolution
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt> 
  */
 VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode(vx_graph graph, vx_image input, vx_convolution conv, vx_image output);
 
@@ -294,8 +272,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvolveNode(vx_graph graph, vx_image input, 
  * \ingroup group_vision_function_gaussian_pyramid
  * \see group_pyramid
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxGaussianPyramidNode(vx_graph graph, vx_image input, vx_pyramid gaussian);
 
@@ -305,8 +282,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxGaussianPyramidNode(vx_graph graph, vx_image 
  * \param [in,out] accum The accumulation image in <tt>\ref VX_DF_IMAGE_S16</tt>.
  * \ingroup group_vision_function_accumulate
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxAccumulateImageNode(vx_graph graph, vx_image input, vx_image accum);
 
@@ -317,8 +293,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateImageNode(vx_graph graph, vx_image 
  * \param [in,out] accum The <tt>\ref VX_DF_IMAGE_U8</tt> accumulation image.
  * \ingroup group_vision_function_accumulate_weighted
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxAccumulateWeightedImageNode(vx_graph graph, vx_image input, vx_scalar alpha, vx_image accum);
 
@@ -329,8 +304,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateWeightedImageNode(vx_graph graph, v
  * \param [in,out] accum The accumulation image in <tt>\ref VX_DF_IMAGE_S16</tt>.
  * \ingroup group_vision_function_accumulate_square
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxAccumulateSquareImageNode(vx_graph graph, vx_image input, vx_scalar shift, vx_image accum);
 
@@ -345,8 +319,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAccumulateSquareImageNode(vx_graph graph, vx_
  * \param [out] maxCount The total number of detected maximums in image (optional). Use a <tt>\ref VX_TYPE_UINT32</tt> scalar.
  * \ingroup group_vision_function_minmaxloc
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxMinMaxLocNode(vx_graph graph,
                         vx_image input,
@@ -361,8 +334,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxMinMaxLocNode(vx_graph graph,
  * \param [out] out The <tt>\ref VX_DF_IMAGE_U8</tt> output image.
  * \ingroup group_vision_function_and
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out);
 
@@ -373,8 +345,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAndNode(vx_graph graph, vx_image in1, vx_imag
  * \param [out] out The <tt>\ref VX_DF_IMAGE_U8</tt> output image.
  * \ingroup group_vision_function_or
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxOrNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out);
 
@@ -385,8 +356,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxOrNode(vx_graph graph, vx_image in1, vx_image
  * \param [out] out The <tt>\ref VX_DF_IMAGE_U8</tt> output image.
  * \ingroup group_vision_function_xor
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1, vx_image in2, vx_image out);
 
@@ -396,8 +366,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxXorNode(vx_graph graph, vx_image in1, vx_imag
  * \param [out] output The <tt>\ref VX_DF_IMAGE_U8</tt> output image.
  * \ingroup group_vision_function_not
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input, vx_image output);
 
@@ -411,8 +380,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxNotNode(vx_graph graph, vx_image input, vx_im
  * \param [out] out The output image, a <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> image.
  * \ingroup group_vision_function_mult
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode(vx_graph graph,
                        vx_image in1, vx_image in2,
@@ -429,8 +397,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxMultiplyNode(vx_graph graph,
  * \param [out] out The output image, a <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> image.
  * \ingroup group_vision_function_add
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph,
                   vx_image in1, vx_image in2,
@@ -445,8 +412,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxAddNode(vx_graph graph,
  * \param [out] out The output image, a <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> image.
  * \ingroup group_vision_function_sub
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxSubtractNode(vx_graph graph,
                        vx_image in1, vx_image in2,
@@ -461,8 +427,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxSubtractNode(vx_graph graph,
  * \param [in] shift A scalar containing a <tt>\ref VX_TYPE_INT32</tt> of the shift value.
  * \ingroup group_vision_function_convertdepth
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph, vx_image input, vx_image output, vx_enum policy, vx_scalar shift);
 
@@ -475,8 +440,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxConvertDepthNode(vx_graph graph, vx_image inp
  * \param [out] output The output image in <tt>\ref VX_DF_IMAGE_U8</tt> format with values either 0 or 255.
  * \ingroup group_vision_function_canny
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxCannyEdgeDetectorNode(vx_graph graph, vx_image input, vx_threshold hyst,
                                 vx_int32 gradient_size, vx_enum norm_type,
@@ -493,8 +457,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxCannyEdgeDetectorNode(vx_graph graph, vx_imag
  * \note Only <tt>\ref VX_NODE_ATTRIBUTE_BORDER_MODE</tt> value <tt>\ref VX_BORDER_MODE_UNDEFINED</tt> or
  * <tt>\ref VX_BORDER_MODE_CONSTANT</tt> is supported.
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxWarpAffineNode(vx_graph graph, vx_image input, vx_matrix matrix, vx_enum type, vx_image output);
 
@@ -509,8 +472,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxWarpAffineNode(vx_graph graph, vx_image input
  * \note Only <tt>\ref VX_NODE_ATTRIBUTE_BORDER_MODE</tt> value <tt>\ref VX_BORDER_MODE_UNDEFINED</tt> or
  * <tt>\ref VX_BORDER_MODE_CONSTANT</tt> is supported.
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxWarpPerspectiveNode(vx_graph graph, vx_image input, vx_matrix matrix, vx_enum type, vx_image output);
 
@@ -525,11 +487,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxWarpPerspectiveNode(vx_graph graph, vx_image 
  * \param [in] block_size The block window size used to compute the Harris Corner score.
  * The implementation must support at least 3, 5, and 7.
  * \param [out] corners The array of <tt>\ref VX_TYPE_KEYPOINT</tt> objects.
- * \param [out] num_corners The total number of detected corners in image (optional).
+ * \param [out] num_corners The total number of detected corners in image (optional). Use a \ref VX_TYPE_SIZE scalar.
  * \ingroup group_vision_function_harris
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(vx_graph graph,
                             vx_image input,
@@ -548,11 +509,10 @@ VX_API_ENTRY vx_node VX_API_CALL vxHarrisCornersNode(vx_graph graph,
  * \param [in] nonmax_suppression If true, non-maximum suppression is applied to
  * detected corners before being placed in the <tt>\ref vx_array</tt> of <tt>\ref VX_TYPE_KEYPOINT</tt> objects.
  * \param [out] corners Output corner <tt>\ref vx_array</tt> of <tt>\ref VX_TYPE_KEYPOINT</tt>.
- * \param [out] num_corners The total number of detected corners in image (optional).
+ * \param [out] num_corners The total number of detected corners in image (optional). Use a \ref VX_TYPE_SIZE scalar.
  * \ingroup group_vision_function_fast
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxFastCornersNode(vx_graph graph, vx_image input, vx_scalar strength_thresh, vx_bool nonmax_suppression, vx_array corners, vx_scalar num_corners);
 
@@ -575,8 +535,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxFastCornersNode(vx_graph graph, vx_image inpu
  *  <tt>\ref VX_CONTEXT_ATTRIBUTE_OPTICAL_FLOW_WINDOW_MAXIMUM_DIMENSION</tt>
  * \ingroup group_vision_function_opticalflowpyrlk
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxOpticalFlowPyrLKNode(vx_graph graph,
                                vx_pyramid old_images,
@@ -600,8 +559,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxOpticalFlowPyrLKNode(vx_graph graph,
  * \note Only <tt>\ref VX_NODE_ATTRIBUTE_BORDER_MODE</tt> value <tt>\ref VX_BORDER_MODE_UNDEFINED</tt> or
  * <tt>\ref VX_BORDER_MODE_CONSTANT</tt> is supported.
  * \return A <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  * \ingroup group_vision_function_remap
  */
 VX_API_ENTRY vx_node VX_API_CALL vxRemapNode(vx_graph graph,
@@ -623,8 +581,7 @@ VX_API_ENTRY vx_node VX_API_CALL vxRemapNode(vx_graph graph,
  * \param [in] kernel_size The input size of the Gaussian filter. Supported values are 3 and 5. 
  * \ingroup group_vision_function_scale_image
  * \return <tt>\ref vx_node</tt>.
- * \retval 0 Node could not be created.
- * \retval * Node handle.
+ * \retval vx_node A node reference. Any possible errors preventing a successful creation should be checked using <tt>\ref vxGetStatus</tt>  
  */
 VX_API_ENTRY vx_node VX_API_CALL vxHalfScaleGaussianNode(vx_graph graph, vx_image input, vx_image output, vx_int32 kernel_size);
 

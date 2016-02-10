@@ -71,12 +71,13 @@ vx_bool vxAddAccessor(vx_context context,
                       vx_enum usage,
                       void *ptr,
                       vx_reference ref,
-                      vx_uint32 *pIndex);
+                      vx_uint32 *pIndex,
+                      void *extra_data);
 
 /*! \brief Finds the accessor in the list and returns the index.
  * \ingroup group_int_context
  */
-vx_bool vxFindAccessor(vx_context context, void *ptr, vx_uint32 *pIndex);
+vx_bool vxFindAccessor(vx_context context, const void *ptr, vx_uint32 *pIndex);
 
 /*! \brief Finds and removes an accessor from the list.
  * \ingroup group_int_context

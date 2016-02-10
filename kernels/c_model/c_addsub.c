@@ -57,7 +57,7 @@ static vx_status vxBinaryU8S16OverflowOp(vx_image in0, vx_image in1, vx_scalar p
     status |= vxAccessImagePatch(in0, &rect, 0, &src_addr[0], (void **)&src_base[0], VX_READ_ONLY);
     status |= vxAccessImagePatch(in1, &rect, 0, &src_addr[1], (void **)&src_base[1], VX_READ_ONLY);
     status |= vxAccessImagePatch(output, &rect, 0, &dst_addr, (void **)&dst_base, VX_WRITE_ONLY);
-    status |= vxAccessScalarValue(policy_param, &overflow_policy);
+    status |= vxReadScalarValue(policy_param, &overflow_policy);
     width = src_addr[0].dim_x;
     height = src_addr[0].dim_y;
     for (y = 0; y < height; y++)

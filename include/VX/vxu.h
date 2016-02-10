@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -27,7 +27,6 @@
 /*!
  * \file
  * \brief The OpenVX Utility Library.
- * \author Erik Rainey <erik.rainey@gmail.com>
  */
 
 #ifdef __cplusplus
@@ -109,8 +108,8 @@ VX_API_ENTRY vx_status VX_API_CALL vxuPhase(vx_context context, vx_image grad_x,
 
 /*! \brief [Immediate] Scales an input image to an output image.
  * \param [in] context The reference to the overall context.
- * \param [in] src The source image.
- * \param [out] dst The destintation image.
+ * \param [in] src The source image of type <tt>\ref VX_DF_IMAGE_U8</tt>.
+ * \param [out] dst The destintation image of type <tt>\ref VX_DF_IMAGE_U8</tt>.
  * \param [in] type The interpolation type. \see vx_interpolation_type_e.
  * \ingroup group_vision_function_scale_image
  * \return A <tt>\ref vx_status_e</tt> enumeration.
@@ -155,9 +154,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxuEqualizeHist(vx_context context, vx_image 
 
 /*! \brief [Immediate] Computes the absolute difference between two images.
  * \param [in] context The reference to the overall context.
- * \param [in] in1 An input image
- * \param [in] in2 An input image
- * \param [out] out The output image.
+ * \param [in] in1 An input image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
+ * \param [in] in2 An input image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
+ * \param [out] out The output image in <tt>\ref VX_DF_IMAGE_U8</tt> or <tt>\ref VX_DF_IMAGE_S16</tt> format.
  * \ingroup group_vision_function_absdiff
  * \return A <tt>\ref vx_status_e</tt> enumeration.
  * \retval VX_SUCCESS Success
@@ -502,7 +501,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxuWarpPerspective(vx_context context, vx_ima
  * \param [in] block_size The block window size used to compute the harris corner score.
  * The implementation must support at least 3, 5, and 7.
  * \param [out] corners The array of <tt>\ref VX_TYPE_KEYPOINT</tt> structs.
- * \param [out] num_corners The total number of detected corners in image (optional).
+ * \param [out] num_corners The total number of detected corners in image (optional). Use a \ref VX_TYPE_SIZE scalar
  * \ingroup group_vision_function_harris
  * \return A <tt>\ref vx_status_e</tt> enumeration.
  * \retval VX_SUCCESS Success
@@ -526,7 +525,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxuHarrisCorners(vx_context context,
  * \param [in] nonmax_suppression If true, non-maximum suppression is applied to
  * detected corners before being places in the <tt>\ref vx_array</tt> of <tt>\ref VX_TYPE_KEYPOINT</tt> structs.
  * \param [out] corners Output corner <tt>\ref vx_array</tt> of <tt>\ref VX_TYPE_KEYPOINT</tt>.
- * \param [out] num_corners The total number of detected corners in image (optional).
+ * \param [out] num_corners The total number of detected corners in image (optional). Use a \ref VX_TYPE_SIZE scalar.
  * \ingroup group_vision_function_fast
  * \return A <tt>\ref vx_status_e</tt> enumeration.
  * \retval VX_SUCCESS Success
@@ -538,17 +537,17 @@ VX_API_ENTRY vx_status VX_API_CALL vxuFastCorners(vx_context context, vx_image i
  * \param [in] context The reference to the overall context.
  * \param [in] old_images Input of first (old) image pyramid
  * \param [in] new_images Input of destination (new) image pyramid
- * \param [in] old_points an array of key points in a vx_array of VX_TYPE_KEYPOINT those key points are defined at
+ * \param [in] old_points an array of key points in a vx_array of <tt>\ref VX_TYPE_KEYPOINT</tt> those key points are defined at
  *  the old_images high resolution pyramid
- * \param [in] new_points_estimates an array of estimation on what is the output key points in a vx_array of
- *  VX_TYPE_KEYPOINT those keypoints are defined at the new_images high resolution pyramid
- * \param [out] new_points an output array of key points in a vx_array of VX_TYPE_KEYPOINT those key points are
+ * \param [in] new_points_estimates an array of estimation on what is the output key points in a <tt>\ref vx_array</tt> of
+ * <tt>\ref VX_TYPE_KEYPOINT</tt> those keypoints are defined at the new_images high resolution pyramid
+ * \param [out] new_points an output array of key points in a <tt>\ref vx_array</tt> of <tt>\ref VX_TYPE_KEYPOINT</tt> those key points are
  *  defined at the new_images high resolution pyramid
- * \param [in] termination termination can be VX_TERM_CRITERIA_ITERATIONS or VX_TERM_CRITERIA_EPSILON or
- * VX_TERM_CRITERIA_BOTH
- * \param [in] epsilon is the vx_float32 error for terminating the algorithm
- * \param [in] num_iterations is the number of iterations
- * \param [in] use_initial_estimate Can be set to either vx_false_e or vx_true_e.
+ * \param [in] termination termination can be <tt>\ref VX_TERM_CRITERIA_ITERATIONS</tt> or <tt>\ref VX_TERM_CRITERIA_EPSILON</tt> or
+ * <tt>\ref VX_TERM_CRITERIA_BOTH</tt>
+ * \param [in] epsilon is the <tt>\ref vx_float32</tt> error for terminating the algorithm
+ * \param [in] num_iterations is the number of iterations. Use a <tt>\ref VX_TYPE_UINT32</tt> scalar.
+ * \param [in] use_initial_estimate Can be set to either <tt>\ref vx_false_e</tt> or <tt>\ref vx_true_e</tt>.
  * \param [in] window_dimension The size of the window on which to perform the algorithm. See 
  *  <tt>\ref VX_CONTEXT_ATTRIBUTE_OPTICAL_FLOW_WINDOW_MAXIMUM_DIMENSION</tt>
  *

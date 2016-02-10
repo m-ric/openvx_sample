@@ -328,7 +328,7 @@ vx_status vxScaleImage(vx_image src_image, vx_image dst_image, vx_scalar stype, 
     vx_status status = VX_FAILURE;
     vx_enum type = 0;
 
-    vxAccessScalarValue(stype, &type);
+    vxReadScalarValue(stype, &type);
     if (interm && size)
     {
         if (type == VX_INTERPOLATION_TYPE_BILINEAR)

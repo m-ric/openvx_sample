@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -29,7 +29,6 @@
 /*!
  * \file
  * \brief The OpenVX Debugging Extension.
- * \author Erik Rainey <erik.rainey@gmail.com>
  * \defgroup group_debug_ext Debugging Extension
  * \defgroup group_vision_function_copy_image Kernel: Copy Image
  * \defgroup group_vision_function_copy_array Kernel: Copy Array

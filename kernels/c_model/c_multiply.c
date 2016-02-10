@@ -47,9 +47,9 @@ vx_status vxMultiply(vx_image in0, vx_image in1, vx_scalar scale_param, vx_scala
     status |= vxAccessImagePatch(in0, &rect, 0, &src_addr[0], (void **)&src_base[0], VX_READ_ONLY);
     status |= vxAccessImagePatch(in1, &rect, 0, &src_addr[1], (void **)&src_base[1], VX_READ_ONLY);
     status |= vxAccessImagePatch(output, &rect, 0, &dst_addr, (void **)&dst_base, VX_WRITE_ONLY);
-    status |= vxAccessScalarValue(scale_param, &scale);
-    status |= vxAccessScalarValue(opolicy_param, &overflow_policy);
-    status |= vxAccessScalarValue(rpolicy_param, &rounding_policy);
+    status |= vxReadScalarValue(scale_param, &scale);
+    status |= vxReadScalarValue(opolicy_param, &overflow_policy);
+    status |= vxReadScalarValue(rpolicy_param, &rounding_policy);
     for (y = 0; y < dst_addr.dim_y; y++)
     {
         for (x = 0; x < dst_addr.dim_x; x++)

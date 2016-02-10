@@ -31,7 +31,7 @@
 #include <VX/vx_lib_extras.h>
 #include <VX/vx_helper.h>
 
-static vx_status VX_CALLBACK vxImageListerKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxImageListerKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 3)
@@ -44,7 +44,7 @@ static vx_status VX_CALLBACK vxImageListerKernel(vx_node node, vx_reference *par
         vx_imagepatch_addressing_t src_addr;
         vx_rectangle_t rect;
         vx_df_image format;
-        vx_uint32 num_corners = 0;
+        vx_size num_corners = 0;
         vx_size dst_capacity = 0;
 
         status = vxGetValidRegionImage(src, &rect);
@@ -105,7 +105,7 @@ static vx_status VX_CALLBACK vxImageListerKernel(vx_node node, vx_reference *par
             }
         }
         if (s_num_points)
-            status |= vxCommitScalarValue(s_num_points, &num_corners);
+            status |= vxWriteScalarValue(s_num_points, &num_corners);
         status |= vxCommitImagePatch(src, NULL, 0, &src_addr, src_base);
     }
     return status;
@@ -154,7 +154,7 @@ static vx_status VX_CALLBACK vxListerOutputValidator(vx_node node, vx_uint32 ind
     }
     else if (index == 2)
     {
-        vx_enum type = VX_TYPE_UINT32;
+        vx_enum type = VX_TYPE_SIZE;
         status = VX_SUCCESS;
         status |= vxSetMetaFormatAttribute(meta, VX_SCALAR_ATTRIBUTE_TYPE, &type, sizeof(type));
     }

@@ -149,8 +149,8 @@ vx_status vxFast9Corners(vx_image src, vx_scalar sens, vx_scalar nonm, vx_array 
     vx_keypoint_t kp;
 
     vx_status status = vxGetValidRegionImage(src, &rect);
-    status |= vxAccessScalarValue(sens, &b);
-    status |= vxAccessScalarValue(nonm, &do_nonmax);
+    status |= vxReadScalarValue(sens, &b);
+    status |= vxReadScalarValue(nonm, &do_nonmax);
     /* remove any pre-existing points */
     status |= vxTruncateArray(points, 0);
     status |= vxAccessImagePatch(src, &rect, 0, &src_addr, &src_base, VX_READ_ONLY);
@@ -203,7 +203,7 @@ vx_status vxFast9Corners(vx_image src, vx_scalar sens, vx_scalar nonm, vx_array 
             status = VX_ERROR_NOT_IMPLEMENTED;
         }
         if (s_num_corners)
-            status |= vxCommitScalarValue(s_num_corners, &num_corners);
+            status |= vxWriteScalarValue(s_num_corners, &num_corners);
         status |= vxCommitImagePatch(src, NULL, 0, &src_addr, src_base);
     }
 

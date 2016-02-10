@@ -139,7 +139,7 @@ static vx_status vxEdgeTrace(vx_image norm, vx_threshold threshold, vx_image out
     return status;
 }
 
-static vx_status VX_CALLBACK vxEdgeTraceKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxEdgeTraceKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 3)

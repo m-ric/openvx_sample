@@ -88,7 +88,7 @@ vx_status VX_CALLBACK XYZInputValidator(vx_node node, vx_uint32 index)
         if (vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &scalar, sizeof(scalar)) == VX_SUCCESS &&
             vxQueryScalar(scalar, VX_SCALAR_ATTRIBUTE_TYPE, &type, sizeof(type)) == VX_SUCCESS &&
             type == VX_TYPE_INT32 &&
-            vxAccessScalarValue(scalar, &value) == VX_SUCCESS)
+            vxReadScalarValue(scalar, &value) == VX_SUCCESS)
         {
             if (XYZ_VALUE_MIN < value && value < XYZ_VALUE_MAX)
             {
@@ -166,7 +166,7 @@ vx_status VX_CALLBACK XYZOutputValidator(vx_node node, vx_uint32 index, vx_meta_
  * of the incorrect dimensions.
  * \ingroup group_example_kernel
  */
-vx_status VX_CALLBACK XYZKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+vx_status VX_CALLBACK XYZKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 4)
@@ -175,7 +175,7 @@ vx_status VX_CALLBACK XYZKernel(vx_node node, vx_reference *parameters, vx_uint3
         vx_scalar scalar = (vx_scalar)parameters[1];
         vx_image output = (vx_image)parameters[2];
         vx_array temp  = (vx_array)parameters[3];
-        void *buf, *in, *out;
+        void *buf, *in = NULL, *out = NULL;
         vx_uint32 y, x;
         vx_int32 value = 0;
         vx_imagepatch_addressing_t addr1, addr2;
@@ -186,7 +186,7 @@ vx_status VX_CALLBACK XYZKernel(vx_node node, vx_reference *parameters, vx_uint3
 
         status = VX_SUCCESS;
 
-        status |= vxAccessScalarValue(scalar, &value);
+        status |= vxReadScalarValue(scalar, &value);
         status |= vxGetValidRegionImage(input, &rect);
         status |= vxAccessImagePatch(input, &rect, 0, &addr1, &in, VX_READ_ONLY);
         status |= vxAccessImagePatch(output, &rect, 0, &addr2, &out, VX_WRITE_ONLY);
@@ -220,7 +220,7 @@ vx_status VX_CALLBACK XYZKernel(vx_node node, vx_reference *parameters, vx_uint3
  * of the incorrect dimensions.
  * \ingroup group_example_kernel
  */
-vx_status VX_CALLBACK XYZInitialize(vx_node node, vx_reference *parameters, vx_uint32 num)
+vx_status VX_CALLBACK XYZInitialize(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     /* XYZ requires no initialization of memory or resources */
     return VX_SUCCESS;
@@ -237,7 +237,7 @@ vx_status VX_CALLBACK XYZInitialize(vx_node node, vx_reference *parameters, vx_u
  * of the incorrect dimensions.
  * \ingroup group_example_kernel
  */
-vx_status VX_CALLBACK XYZDeinitialize(vx_node node, vx_reference *parameters, vx_uint32 num)
+vx_status VX_CALLBACK XYZDeinitialize(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     /* XYZ requires no de-initialization of memory or resources */
     return VX_SUCCESS;

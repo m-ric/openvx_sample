@@ -94,7 +94,7 @@ static vx_status VX_CALLBACK vxMultiplyInputValidator(vx_node node, vx_uint32 in
                 if (type == VX_TYPE_FLOAT32)
                 {
                     vx_float32 scale = 0.0f;
-                    if ((vxAccessScalarValue(scalar, &scale) == VX_SUCCESS) &&
+                    if ((vxReadScalarValue(scalar, &scale) == VX_SUCCESS) &&
                         (scale >= 0))
                     {
                         status = VX_SUCCESS;
@@ -127,7 +127,7 @@ static vx_status VX_CALLBACK vxMultiplyInputValidator(vx_node node, vx_uint32 in
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum overflow_policy = 0;
-                    vxAccessScalarValue(scalar, &overflow_policy);
+                    vxReadScalarValue(scalar, &overflow_policy);
                     if ((overflow_policy == VX_CONVERT_POLICY_WRAP) ||
                         (overflow_policy == VX_CONVERT_POLICY_SATURATE))
                     {
@@ -161,7 +161,7 @@ static vx_status VX_CALLBACK vxMultiplyInputValidator(vx_node node, vx_uint32 in
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum rouding_policy = 0;
-                    vxAccessScalarValue(scalar, &rouding_policy);
+                    vxReadScalarValue(scalar, &rouding_policy);
                     if ((rouding_policy == VX_ROUND_POLICY_TO_ZERO) ||
                         (rouding_policy == VX_ROUND_POLICY_TO_NEAREST_EVEN))
                     {
@@ -258,7 +258,7 @@ static vx_param_description_t multiply_kernel_params[] = {
     {VX_OUTPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},
 };
 
-static vx_status VX_CALLBACK vxMultiplyKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxMultiplyKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 6)
     {

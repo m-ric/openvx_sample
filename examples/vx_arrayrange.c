@@ -35,12 +35,12 @@ vx_array example_array_of_custom_type_and_initialization(vx_context context)
     vx_array array = vxCreateArray(context, mytype, MY_NUM_ITEMS);
     //! [array define]
     //! [array query]
-    vx_size num_items = 0ul;
+    vx_size num_items = 0;
     vxQueryArray(array, VX_ARRAY_ATTRIBUTE_NUMITEMS, &num_items, sizeof(num_items));
     //! [array query]
     {
         //! [array range]
-        vx_size i, stride = 0ul;
+        vx_size i, stride = sizeof(vx_size);
         void *base = NULL;
         /* access entire array at once */
         vxAccessArrayRange(array, 0, num_items, &stride, &base, VX_READ_AND_WRITE);

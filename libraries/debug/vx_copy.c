@@ -35,7 +35,7 @@
 #include <debug_k.h>
 
 
-static vx_status VX_CALLBACK vxCopyImagePtrKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxCopyImagePtrKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 2)
@@ -50,7 +50,7 @@ static vx_status VX_CALLBACK vxCopyImagePtrKernel(vx_node node, vx_reference *pa
         vx_rectangle_t rect;
         vx_uint8 *srcp = NULL;
 
-        vxAccessScalarValue(input, &src);
+        vxReadScalarValue(input, &src);
         srcp = (vx_uint8 *)src;
 
         status = VX_SUCCESS; // assume success until an error occurs.
@@ -83,7 +83,7 @@ static vx_status VX_CALLBACK vxCopyImagePtrKernel(vx_node node, vx_reference *pa
     return status;
 }
 
-static vx_status VX_CALLBACK vxCopyImageKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxCopyImageKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 2)
     {
@@ -94,7 +94,7 @@ static vx_status VX_CALLBACK vxCopyImageKernel(vx_node node, vx_reference *param
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxCopyArrayKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxCopyArrayKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 2)
     {

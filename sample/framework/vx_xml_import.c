@@ -729,7 +729,7 @@ static vx_status vxLoadDataForMatrix(vx_matrix matrix, xmlNodePtr cur, vx_size c
         void *ptr = calloc(rows*cols,vxMetaSizeOfType(type));
         if (ptr)
         {
-            if( (status = vxAccessMatrix(matrix, ptr)) == VX_SUCCESS)
+            if( (status = vxReadMatrix(matrix, ptr)) == VX_SUCCESS)
             {
                 XML_FOREACH_CHILD_TAG (cur, tag, tags) {
                     vx_uint32 row = xml_prop_ulong(cur, "row");
@@ -751,7 +751,7 @@ static vx_status vxLoadDataForMatrix(vx_matrix matrix, xmlNodePtr cur, vx_size c
                         return VX_ERROR_INVALID_VALUE;
                     }
                 }
-                status = vxCommitMatrix(matrix, ptr);
+                status = vxWriteMatrix(matrix, ptr);
             }
             free(ptr);
         } else {
@@ -793,7 +793,7 @@ static vx_status vxLoadDataForConvolution(vx_convolution conv, xmlNodePtr cur, v
         void *ptr = calloc(rows*cols,sizeof(vx_int16));
         if (ptr)
         {
-            if( (status = vxAccessConvolutionCoefficients(conv, ptr)) == VX_SUCCESS)
+            if( (status = vxReadConvolutionCoefficients(conv, ptr)) == VX_SUCCESS)
             {
                 XML_FOREACH_CHILD_TAG (cur, tag, tags) {
                     vx_uint32 row = xml_prop_ulong(cur, "row");
@@ -811,7 +811,7 @@ static vx_status vxLoadDataForConvolution(vx_convolution conv, xmlNodePtr cur, v
                         return VX_ERROR_INVALID_VALUE;
                     }
                 }
-                status = vxCommitConvolutionCoefficients(conv, ptr);
+                status = vxWriteConvolutionCoefficients(conv, ptr);
             }
             free(ptr);
         } else {
@@ -880,71 +880,71 @@ static vx_status vxLoadDataForScalar(vx_scalar scalar, xmlNodePtr cur)
             vx_char c;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%c", &c);
-            vxCommitScalarValue(scalar, &c);
+            vxWriteScalarValue(scalar, &c);
         } else if (tag == BOOL_TAG) {
             vx_bool v = vx_false_e;
             xml_string(cur, value, sizeof(value));
             if (strncmp(value, "true", sizeof(value)) == 0)
                 v = vx_true_e;
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == UINT8_TAG) {
             vx_uint8 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%hhu", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == UINT16_TAG) {
             vx_uint16 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%hu", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == UINT32_TAG) {
             vx_uint32 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%u", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == UINT64_TAG) {
             vx_uint64 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%lu", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == INT8_TAG) {
             vx_int8 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%hhd", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == INT16_TAG) {
             vx_int16 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%hd", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == INT32_TAG) {
             vx_int32 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%d", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == INT64_TAG) {
             vx_int64 v = 0u;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%ld", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == SIZE_TAG) {
             vx_size v = xml_ulong(cur);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == ENUM_TAG) {
             vx_enum v = 0;
             xml_string(cur, value, sizeof(value));
             sscanf(value, "%d", &v);
-            vxCommitScalarValue(scalar, &v);
+            vxWriteScalarValue(scalar, &v);
         } else if (tag == FLOAT32_TAG) {
             vx_float32 f = xml_float(cur);
-            vxCommitScalarValue(scalar, &f);
+            vxWriteScalarValue(scalar, &f);
         } else if (tag == FLOAT64_TAG) {
             vx_float64 f = xml_double(cur);
-            vxCommitScalarValue(scalar, &f);
+            vxWriteScalarValue(scalar, &f);
         } else if (tag == DF_IMAGE_TAG) {
             vx_df_image value = 0;
             xml_string(cur, (vx_char *)&value, sizeof(value));
-            vxCommitScalarValue(scalar, &value);
+            vxWriteScalarValue(scalar, &value);
         }
     }
     return status;
@@ -1710,8 +1710,8 @@ VX_API_ENTRY vx_import VX_API_CALL vxImportFromXML(vx_context context,
                         case DISTRIBUTION_TAG:
                         {
                             vx_size bins = xml_prop_ulong(cur, "bins");
-                            vx_size range = xml_prop_ulong(cur, "range");
-                            vx_size offset = xml_prop_ulong(cur, "offset");
+                            vx_uint32 range = xml_prop_ulong(cur, "range");
+                            vx_int32 offset = xml_prop_ulong(cur, "offset");
                             if(childNum == 0) { /* Create delay object based on first child */
                                 vx_distribution exemplar = NULL;
                                 status = vxReserveReferences(context, count+1);

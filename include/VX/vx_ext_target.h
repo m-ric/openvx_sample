@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -28,7 +28,6 @@
 
 /*! \file
  * \brief The OpenVX Target API Definition
- * \author Erik Rainey <erik.rainey@gmail.com>
  */
 
 /*! \brief The extension name.

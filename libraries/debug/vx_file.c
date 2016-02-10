@@ -36,7 +36,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-static vx_status VX_CALLBACK vxFWriteImageKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxFWriteImageKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 2)
@@ -48,7 +48,7 @@ static vx_status VX_CALLBACK vxFWriteImageKernel(vx_node node, vx_reference para
     return status;
 }
 
-static vx_status VX_CALLBACK vxFWriteArrayKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxFWriteArrayKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 2)
@@ -110,7 +110,7 @@ static vx_status VX_CALLBACK vxFWriteArrayKernel(vx_node node, vx_reference *par
     return status;
 }
 
-static vx_status VX_CALLBACK vxFReadImageKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxFReadImageKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 2)
@@ -122,7 +122,7 @@ static vx_status VX_CALLBACK vxFReadImageKernel(vx_node node, vx_reference param
     return status;
 }
 
-static vx_status VX_CALLBACK vxFReadArrayKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxFReadArrayKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 2)

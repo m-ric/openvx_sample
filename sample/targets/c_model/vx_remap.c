@@ -59,7 +59,7 @@ static vx_bool read_pixel(void* base, vx_imagepatch_addressing_t* addr,
 }
 
 
-static vx_status VX_CALLBACK vxRemapKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxRemapKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 4)
@@ -77,7 +77,7 @@ static vx_status VX_CALLBACK vxRemapKernel(vx_node node, vx_reference *parameter
         vx_rectangle_t dst_rect;
         vx_border_mode_t borders;
 
-        vxAccessScalarValue(stype, &policy);
+        vxReadScalarValue(stype, &policy);
         vxQueryImage(src_image, VX_IMAGE_ATTRIBUTE_WIDTH, &width, sizeof(width));
         vxQueryImage(src_image, VX_IMAGE_ATTRIBUTE_HEIGHT, &height, sizeof(height));
         src_rect.start_x = src_rect.start_y = 0;
@@ -199,7 +199,7 @@ static vx_status VX_CALLBACK vxRemapInputValidator(vx_node node, vx_uint32 index
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum policy = 0;
-                    vxAccessScalarValue(scalar, &policy);
+                    vxReadScalarValue(scalar, &policy);
                     if ((policy == VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR) ||
                         (policy == VX_INTERPOLATION_TYPE_BILINEAR))
                     {

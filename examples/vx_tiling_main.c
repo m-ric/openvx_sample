@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 {
     vx_status status = VX_SUCCESS;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_rectangle_t rect = {1, 1, 513, 513}; // 512x512
         vx_uint32 i = 0;
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
         if (status == VX_SUCCESS)
         {
             vx_graph graph = vxCreateGraph(context);
-            if (graph)
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
             {
                 vx_node nodes[] = {
                     vxFReadImageNode(graph, "lena_512x512.pgm", images[1]),

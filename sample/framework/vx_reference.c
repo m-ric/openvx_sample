@@ -91,7 +91,8 @@ vx_bool vxAddReference(vx_context context, vx_reference ref)
 {
     vx_uint32 r;
     vx_bool ret = vx_false_e;
-    if (context)
+    vxSemWait(&context->base.lock);
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         for (r = 0; r < VX_INT_MAX_REF; r++)
         {
@@ -108,6 +109,7 @@ vx_bool vxAddReference(vx_context context, vx_reference ref)
         /* can't add context to itself */
         ret = vx_true_e;
     }
+    vxSemPost(&context->base.lock);
     return ret;
 }
 
@@ -326,15 +328,18 @@ vx_bool vxIsValidSpecificReference(vx_reference ref, vx_enum type)
 vx_bool vxRemoveReference(vx_context context, vx_reference ref)
 {
     vx_uint32 r;
+    vxSemWait(&context->base.lock);
     for (r = 0; r < VX_INT_MAX_REF; r++)
     {
         if (context->reftable[r] == ref)
         {
             context->reftable[r] = NULL;
             context->num_references--;
+            vxSemPost(&context->base.lock);
             return vx_true_e;
         }
     }
+    vxSemPost(&context->base.lock);
     return vx_false_e;
 }
 

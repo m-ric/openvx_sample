@@ -26,6 +26,7 @@
 VX_API_ENTRY vx_lut VX_API_CALL vxCreateLUT(vx_context context, vx_enum data_type, vx_size count)
 {
     vx_lut_t *lut = NULL;
+
     if (vxIsValidContext(context) == vx_true_e)
     {
         if (data_type == VX_TYPE_UINT8)
@@ -41,7 +42,7 @@ VX_API_ENTRY vx_lut VX_API_CALL vxCreateLUT(vx_context context, vx_enum data_typ
 #endif
             {
                 lut = (vx_lut_t *)vxCreateArrayInt(context, VX_TYPE_UINT8, count, vx_false_e, VX_TYPE_LUT);
-                if (lut && lut->base.type == VX_TYPE_LUT)
+                if (vxGetStatus((vx_reference)lut) == VX_SUCCESS && lut->base.type == VX_TYPE_LUT)
                 {
                     lut->num_items = count;
                     vxPrintArray(lut);
@@ -52,7 +53,7 @@ VX_API_ENTRY vx_lut VX_API_CALL vxCreateLUT(vx_context context, vx_enum data_typ
         else if (data_type == VX_TYPE_UINT16)
         {
             lut = (vx_lut_t *)vxCreateArrayInt(context, VX_TYPE_UINT16, count, vx_false_e, VX_TYPE_LUT);
-            if (lut && lut->base.type == VX_TYPE_LUT)
+            if (vxGetStatus((vx_reference)lut) == VX_SUCCESS && lut->base.type == VX_TYPE_LUT)
             {
                 lut->num_items = count;
                 vxPrintArray(lut);
@@ -66,6 +67,7 @@ VX_API_ENTRY vx_lut VX_API_CALL vxCreateLUT(vx_context context, vx_enum data_typ
             lut = (vx_lut_t *)vxGetErrorObject(context, VX_ERROR_INVALID_TYPE);
         }
     }
+
     return (vx_lut)lut;
 }
 
@@ -133,7 +135,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxAccessLUT(vx_lut l, void **ptr, vx_enum usa
     vx_lut_t *lut = (vx_lut_t *)l;
     if (vxIsValidSpecificReference(&lut->base, VX_TYPE_LUT) == vx_true_e)
     {
-        status = vxAccessArrayRangeInt((vx_array_t *)l, 0, lut->num_items, ptr, usage);
+        status = vxAccessArrayRangeInt((vx_array_t *)l, 0, lut->num_items, NULL, ptr, usage);
     }
     else
     {
@@ -142,7 +144,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxAccessLUT(vx_lut l, void **ptr, vx_enum usa
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxCommitLUT(vx_lut l, void *ptr)
+VX_API_ENTRY vx_status VX_API_CALL vxCommitLUT(vx_lut l, const void *ptr)
 {
     vx_status status = VX_FAILURE;
     vx_lut_t *lut = (vx_lut_t *)l;

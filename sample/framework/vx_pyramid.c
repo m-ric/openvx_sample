@@ -131,6 +131,9 @@ static vx_pyramid vxCreatePyramidInt(vx_context context,
     vx_pyramid pyramid = NULL;
 
     if (vxIsValidContext(context) == vx_false_e)
+        /* Context is invalid, we can't get any error object,
+         * we then simply return NULL as it is handled by vxGetStatus
+         */
         return NULL;
 
     if ((scale != VX_SCALE_PYRAMID_HALF) &&
@@ -149,7 +152,7 @@ static vx_pyramid vxCreatePyramidInt(vx_context context,
     else
     {
         pyramid = (vx_pyramid)vxCreateReference(context, VX_TYPE_PYRAMID, VX_EXTERNAL, &context->base);
-        if (pyramid && pyramid->base.type == VX_TYPE_PYRAMID)
+        if (vxGetStatus((vx_reference)pyramid) == VX_SUCCESS && pyramid->base.type == VX_TYPE_PYRAMID)
         {
             vx_status status;
             pyramid->base.is_virtual = is_virtual;
@@ -168,39 +171,53 @@ static vx_pyramid vxCreatePyramidInt(vx_context context,
             pyramid = (vx_pyramid_t *)vxGetErrorObject(context, VX_ERROR_NO_MEMORY);
         }
     }
+
     return pyramid;
 }
 
 VX_API_ENTRY vx_pyramid VX_API_CALL vxCreateVirtualPyramid(vx_graph graph,
-                                         vx_size levels,
-                                         vx_float32 scale,
-                                         vx_uint32 width,
-                                         vx_uint32 height,
-                                         vx_df_image format)
+                                                           vx_size levels,
+                                                           vx_float32 scale,
+                                                           vx_uint32 width,
+                                                           vx_uint32 height,
+                                                           vx_df_image format)
 {
     vx_pyramid pyramid = NULL;
+
     if (vxIsValidSpecificReference(&graph->base, VX_TYPE_GRAPH) == vx_true_e)
     {
         pyramid = vxCreatePyramidInt(graph->base.context, levels, scale,
-                                 width, height, format,
-                                 vx_true_e);
-        if (pyramid && pyramid->base.type == VX_TYPE_PYRAMID)
+                                     width, height, format,
+                                     vx_true_e);
+        if ( vxGetStatus((vx_reference)pyramid) == VX_SUCCESS &&
+             pyramid->base.type == VX_TYPE_PYRAMID)
         {
             pyramid->base.scope = (vx_reference_t *)graph;
         }
     }
+    /* else, the graph is invalid, we can't get any context and then error object */
+
     return pyramid;
 }
 
 VX_API_ENTRY vx_pyramid VX_API_CALL vxCreatePyramid(vx_context context, vx_size levels, vx_float32 scale, vx_uint32 width, vx_uint32 height, vx_df_image format)
 {
-    if ((width == 0) || (height == 0) || (format == VX_DF_IMAGE_VIRT))
+    vx_pyramid pyr = NULL;
+
+    if (vxIsValidContext(context) == vx_true_e)
     {
-        return (vx_pyramid)vxGetErrorObject(context, VX_ERROR_INVALID_PARAMETERS);
+        if ((width == 0) || (height == 0) || (format == VX_DF_IMAGE_VIRT))
+        {
+            pyr = (vx_pyramid)vxGetErrorObject(context, VX_ERROR_INVALID_PARAMETERS);
+        }
+        else {
+            pyr = (vx_pyramid)vxCreatePyramidInt(context,
+                                                 levels, scale, width, height, format,
+                                                 vx_false_e);
+        }
     }
-    return (vx_pyramid)vxCreatePyramidInt(context,
-                                           levels, scale, width, height, format,
-                                           vx_false_e);
+
+    return pyr;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxQueryPyramid(vx_pyramid pyramid, vx_enum attribute, void *ptr, vx_size size)

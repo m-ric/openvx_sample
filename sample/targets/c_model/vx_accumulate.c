@@ -33,7 +33,7 @@
 #include <c_model.h>
 
 
-static vx_status VX_CALLBACK vxAccumulateKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxAccumulateKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 2)
     {
@@ -44,7 +44,7 @@ static vx_status VX_CALLBACK vxAccumulateKernel(vx_node node, vx_reference *para
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxAccumulateWeightedKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxAccumulateWeightedKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -56,7 +56,7 @@ static vx_status VX_CALLBACK vxAccumulateWeightedKernel(vx_node node, vx_referen
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxAccumulateSquareKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxAccumulateSquareKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -190,7 +190,7 @@ static vx_status VX_CALLBACK vxAccumulateWeightedInputValidator(vx_node node, vx
                 if (type == VX_TYPE_FLOAT32)
                 {
                     vx_float32 alpha = 0.0f;
-                    if ((vxAccessScalarValue(scalar, &alpha) == VX_SUCCESS) &&
+                    if ((vxReadScalarValue(scalar, &alpha) == VX_SUCCESS) &&
                         (0.0f <= alpha) && (alpha <= 1.0f))
                     {
                         status = VX_SUCCESS;
@@ -278,7 +278,7 @@ static vx_status VX_CALLBACK vxAccumulateSquaredInputValidator(vx_node node, vx_
                 if (type == VX_TYPE_UINT32)
                 {
                     vx_uint32 shift = 0u;
-                    if ((vxAccessScalarValue(scalar, &shift) == VX_SUCCESS) &&
+                    if ((vxReadScalarValue(scalar, &shift) == VX_SUCCESS) &&
                         (0 <= shift) && (shift <= 15))
                     {
                         status = VX_SUCCESS;

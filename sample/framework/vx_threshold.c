@@ -52,6 +52,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseThreshold(vx_threshold *t)
 VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThreshold(vx_context context, vx_enum thresh_type, vx_enum data_type)
 {
     vx_threshold threshold = NULL;
+
     if (vxIsValidContext(context) == vx_true_e)
     {
         if (vxIsValidThresholdDataType(data_type) == vx_true_e)
@@ -59,7 +60,7 @@ VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThreshold(vx_context context, vx_e
             if (vxIsValidThresholdType(thresh_type) == vx_true_e)
             {
                 threshold = (vx_threshold)vxCreateReference(context, VX_TYPE_THRESHOLD, VX_EXTERNAL, &context->base);
-                if (threshold && threshold->base.type == VX_TYPE_THRESHOLD)
+                if (vxGetStatus((vx_reference)threshold) == VX_SUCCESS && threshold->base.type == VX_TYPE_THRESHOLD)
                 {
                     threshold->thresh_type = thresh_type;
                 }
@@ -78,10 +79,11 @@ VX_API_ENTRY vx_threshold VX_API_CALL vxCreateThreshold(vx_context context, vx_e
             threshold = (vx_threshold )vxGetErrorObject(context, VX_ERROR_INVALID_TYPE);
         }
     }
+
     return threshold;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute(vx_threshold threshold, vx_enum attribute, void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetThresholdAttribute(vx_threshold threshold, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     if (vxIsValidSpecificReference(&threshold->base, VX_TYPE_THRESHOLD) == vx_true_e)
@@ -246,6 +248,16 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryThreshold(vx_threshold threshold, vx_e
                 if (VX_CHECK_PARAM(ptr, size, vx_enum, 0x3))
                 {
                     *(vx_enum *)ptr = threshold->thresh_type;
+                }
+                else
+                {
+                    status = VX_ERROR_INVALID_PARAMETERS;
+                }
+                break;
+            case VX_THRESHOLD_ATTRIBUTE_DATA_TYPE:
+                if (VX_CHECK_PARAM(ptr, size, vx_enum, 0x3))
+                {
+                    *(vx_enum *)ptr = VX_TYPE_UINT8;
                 }
                 else
                 {

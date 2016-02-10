@@ -32,7 +32,7 @@
 #include <vx_internal.h>
 #include <c_model.h>
 
-static vx_status VX_CALLBACK vxSobel3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxSobel3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 3)
@@ -111,7 +111,7 @@ static vx_param_description_t gradient_kernel_params[] = {
 
 vx_kernel_description_t sobel3x3_kernel = {
     VX_KERNEL_SOBEL_3x3,
-    "org.khronos.openvx.sobel3x3",
+    "org.khronos.openvx.sobel_3x3",
     vxSobel3x3Kernel,
     gradient_kernel_params, dimof(gradient_kernel_params),
     vxGradientInputValidator,

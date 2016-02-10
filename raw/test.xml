@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<openvx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.khronos.org/openvx" xsi:schemaLocation="http://www.khronos.org/openvx OpenVX.xsd"
+<openvx xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="https://www.khronos.org/registry/vx/schema" xsi:schemaLocation="https://www.khronos.org/registry/vx/schema openvx-1-0.xsd"
 	references="46">
 	<library>openvx-debug</library>
 	<struct size="32">USER_STRUCT_0</struct>

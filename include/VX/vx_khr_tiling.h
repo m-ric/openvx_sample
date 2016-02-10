@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -27,10 +27,6 @@
 /*!
  * \file
  * \brief The Khronos Extension for User Tiling Functions.
- * \author Erik Rainey <erik.rainey@gmail.com>
- * \author Shorin Kyo <shorin.kyo.wz@renasas.com>
- * \author Thierry Lepley <thierry.lepley@st.com>
- * \author Frank Brill <fbrill@nvidia.com>
  *
  * \defgroup group_tiling Extension: User Tiling API
  * \brief The Khronos Extension for User Tiling Functions.
@@ -48,7 +44,7 @@
  * \brief A platform wrapper for the restrict keyword.
  * \ingroup group_tiling
  */
-#if defined(WIN32)
+#if defined(_WIN32)
 #define VX_RESTRICT
 #else
 #if defined(__cplusplus) || defined(ANDROID)
@@ -134,14 +130,14 @@ typedef struct _vx_tile_t {
 #define vxImageWidth(ptile)   ((ptile))->image.width)
 
 /*!
- * \brief The tile index in the x direction. The left-most tile starts with 0.
+ * \brief The offset between the left edge of the image and the left edge of the tile, in pixels.
  * \param [in] ptile The pointer to the \ref vx_tile_t structure.
  * \ingroup group_tiling
  */
 #define vxTileX(ptile)        ((ptile)->tile_x)
 
 /*!
- * \brief The tile index in the Y direction. The top-most tile starts with 0.
+ * \brief The offset between the top edge of the image and the top edge of the tile, in pixels.
  * \param [in] ptile The pointer to the \ref vx_tile_t structure.
  * \ingroup group_tiling
  */

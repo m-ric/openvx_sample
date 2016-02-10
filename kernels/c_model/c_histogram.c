@@ -34,8 +34,8 @@ vx_status vxHistogram(vx_image src, vx_distribution dist)
     vx_df_image format = 0;
     vx_uint32 x = 0;
     vx_uint32 y = 0;
-    vx_size offset = 0;
-    vx_size range = 0;
+    vx_int32 offset = 0;
+    vx_uint32 range = 0;
     vx_size numBins = 0;
     vx_uint32 window_size = 0;
     vx_status status = VX_SUCCESS;

@@ -73,8 +73,8 @@ vx_status vxMeanStdDev(vx_image input, vx_scalar mean, vx_scalar stddev)
         }
     }
     fstddev = (vx_float32)sqrt(sum_diff_sqrs / (addrs.dim_x*addrs.dim_y));
-    status |= vxCommitScalarValue(mean, &fmean);
-    status |= vxCommitScalarValue(stddev, &fstddev);
+    status |= vxWriteScalarValue(mean, &fmean);
+    status |= vxWriteScalarValue(stddev, &fstddev);
     status |= vxCommitImagePatch(input, &rect, 0, &addrs, base_ptr);
 
     return status;
@@ -190,42 +190,42 @@ vx_status vxMinMaxLoc(vx_image input, vx_scalar minVal, vx_scalar maxVal, vx_arr
         case VX_DF_IMAGE_U8:
             {
                 vx_uint8 min = (vx_uint8)iMinVal, max = (vx_uint8)iMaxVal;
-                if (minVal) vxCommitScalarValue(minVal, &min);
-                if (maxVal) vxCommitScalarValue(maxVal, &max);
+                if (minVal) vxWriteScalarValue(minVal, &min);
+                if (maxVal) vxWriteScalarValue(maxVal, &max);
             }
             break;
         case VX_DF_IMAGE_U16:
             {
                 vx_uint16 min = (vx_uint16)iMinVal, max = (vx_uint16)iMaxVal;
-                if (minVal) vxCommitScalarValue(minVal, &min);
-                if (maxVal) vxCommitScalarValue(maxVal, &max);
+                if (minVal) vxWriteScalarValue(minVal, &min);
+                if (maxVal) vxWriteScalarValue(maxVal, &max);
             }
             break;
         case VX_DF_IMAGE_U32:
             {
                 vx_uint32 min = (vx_uint32)iMinVal, max = (vx_uint32)iMaxVal;
-                if (minVal) vxCommitScalarValue(minVal, &min);
-                if (maxVal) vxCommitScalarValue(maxVal, &max);
+                if (minVal) vxWriteScalarValue(minVal, &min);
+                if (maxVal) vxWriteScalarValue(maxVal, &max);
             }
             break;
         case VX_DF_IMAGE_S16:
             {
                 vx_int16 min = (vx_int16)iMinVal, max = (vx_int16)iMaxVal;
-                if (minVal) vxCommitScalarValue(minVal, &min);
-                if (maxVal) vxCommitScalarValue(maxVal, &max);
+                if (minVal) vxWriteScalarValue(minVal, &min);
+                if (maxVal) vxWriteScalarValue(maxVal, &max);
             }
             break;
         case VX_DF_IMAGE_S32:
             {
                 vx_int32 min = (vx_int32)iMinVal, max = (vx_int32)iMaxVal;
-                if (minVal) vxCommitScalarValue(minVal, &min);
-                if (maxVal) vxCommitScalarValue(maxVal, &max);
+                if (minVal) vxWriteScalarValue(minVal, &min);
+                if (maxVal) vxWriteScalarValue(maxVal, &max);
             }
             break;
     }
 
-    if (minCount) vxCommitScalarValue(minCount, &iMinCount);
-    if (maxCount) vxCommitScalarValue(maxCount, &iMaxCount);
+    if (minCount) vxWriteScalarValue(minCount, &iMinCount);
+    if (maxCount) vxWriteScalarValue(maxCount, &iMaxCount);
 
     return status;
 }

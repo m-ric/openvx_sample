@@ -28,12 +28,13 @@ VX_API_ENTRY vx_remap VX_API_CALL vxCreateRemap(vx_context context,
                               vx_uint32 dst_width, vx_uint32 dst_height)
 {
     vx_remap remap = NULL;
+
     if (vxIsValidContext(context) == vx_true_e)
     {
         if (src_width != 0 && src_height != 0 && dst_width != 0 && dst_height != 0)
         {
             remap = (vx_remap)vxCreateReference(context, VX_TYPE_REMAP, VX_EXTERNAL, &context->base);
-            if (remap && remap->base.type == VX_TYPE_REMAP)
+            if (vxGetStatus((vx_reference)remap) == VX_SUCCESS && remap->base.type == VX_TYPE_REMAP)
             {
                 remap->src_width = src_width;
                 remap->src_height = src_height;
@@ -54,6 +55,7 @@ VX_API_ENTRY vx_remap VX_API_CALL vxCreateRemap(vx_context context,
             remap = (vx_remap_t *)vxGetErrorObject(context, VX_ERROR_INVALID_PARAMETERS);
         }
     }
+
     return remap;
 }
 

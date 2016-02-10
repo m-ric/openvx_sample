@@ -38,7 +38,7 @@
 static const vx_char name[VX_MAX_TARGET_NAME] = "pc.opencl";
 
 /*! \brief Prototype for assigning to kernel */
-static vx_status vxclCallOpenCLKernel(vx_node node, vx_reference *parameters, vx_uint32 num);
+static vx_status vxclCallOpenCLKernel(vx_node node, const vx_reference *parameters, vx_uint32 num);
 
 static vx_cl_kernel_description_t *cl_kernels[] = {
     &box3x3_clkernel,
@@ -347,7 +347,7 @@ exit:
 vx_status vxTargetDeinit(vx_target_t *target)
 {
     vx_context context = target->base.context;
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         cl_uint p = 0, d = 0;
         vx_uint32 k = 0;
@@ -661,7 +661,7 @@ vx_status vxclCallOpenCLKernel(vx_node node, vx_reference parameters[], vx_uint3
                 vx_size size = 0ul;
                 vx_scalar sc = (vx_scalar)ref;
                 vx_enum stype = VX_TYPE_INVALID;
-                vxAccessScalarValue(sc, &value);
+                vxReadScalarValue(sc, &value);
                 vxQueryScalar(sc, VX_SCALAR_ATTRIBUTE_TYPE, &stype, sizeof(stype));
                 size = vxSizeOfType(stype);
                 err = clSetKernelArg(vxclk->kernels[plidx], argidx++, size, &value);

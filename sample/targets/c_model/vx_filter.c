@@ -34,7 +34,7 @@
 #include <c_model.h>
 
 
-static vx_status VX_CALLBACK vxMedian3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxMedian3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 2)
@@ -51,7 +51,7 @@ static vx_status VX_CALLBACK vxMedian3x3Kernel(vx_node node, vx_reference *param
     return status;
 }
 
-static vx_status VX_CALLBACK vxBox3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxBox3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 2)
@@ -68,7 +68,7 @@ static vx_status VX_CALLBACK vxBox3x3Kernel(vx_node node, vx_reference *paramete
     return status;
 }
 
-static vx_status VX_CALLBACK vxGaussian3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxGaussian3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 2)
@@ -144,36 +144,44 @@ static vx_param_description_t filter_kernel_params[] = {
 
 vx_kernel_description_t box3x3_kernel = {
     VX_KERNEL_BOX_3x3,
-    "org.khronos.openvx.box3x3:default",
+    "org.khronos.openvx.box_3x3:default",
     vxBox3x3Kernel,
     filter_kernel_params, dimof(filter_kernel_params),
     vxFilterInputValidator,
     vxFilterOutputValidator,
+    NULL,
+    NULL,
 };
 
 vx_kernel_description_t box3x3_kernel_2 = {
     VX_KERNEL_BOX_3x3,
-    "org.khronos.openvx.box3x3:duplicate",
+    "org.khronos.openvx.box_3x3:duplicate",
     vxBox3x3Kernel,
     filter_kernel_params, dimof(filter_kernel_params),
     vxFilterInputValidator,
     vxFilterOutputValidator,
+    NULL,
+    NULL,
 };
 
 vx_kernel_description_t median3x3_kernel = {
     VX_KERNEL_MEDIAN_3x3,
-    "org.khronos.openvx.median3x3",
+    "org.khronos.openvx.median_3x3",
     vxMedian3x3Kernel,
     filter_kernel_params, dimof(filter_kernel_params),
     vxFilterInputValidator,
     vxFilterOutputValidator,
+    NULL,
+    NULL,
 };
 
 vx_kernel_description_t gaussian3x3_kernel = {
     VX_KERNEL_GAUSSIAN_3x3,
-    "org.khronos.openvx.gaussian3x3",
+    "org.khronos.openvx.gaussian_3x3",
     vxGaussian3x3Kernel,
     filter_kernel_params, dimof(filter_kernel_params),
     vxFilterInputValidator,
     vxFilterOutputValidator,
+    NULL,
+    NULL,
 };

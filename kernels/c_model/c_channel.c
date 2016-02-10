@@ -282,27 +282,26 @@ vx_status vxChannelExtract(vx_image src, vx_scalar channel, vx_image dst)
     vx_uint32 cidx = 0;
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
 
-    vxAccessScalarValue(channel, &chan);
+    vxReadScalarValue(channel, &chan);
     vxQueryImage(src, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
-
-    switch (chan)
-    {
-        case VX_CHANNEL_0:
-            cidx = 0; break;
-        case VX_CHANNEL_1:
-            cidx = 1; break;
-        case VX_CHANNEL_2:
-            cidx = 2; break;
-        case VX_CHANNEL_3:
-            cidx = 3; break;
-        default:
-            return VX_ERROR_INVALID_PARAMETERS;
-    }
 
     switch (format)
     {
         case VX_DF_IMAGE_RGB:
         case VX_DF_IMAGE_RGBX:
+            switch (chan)
+            {
+                case VX_CHANNEL_R:
+                    cidx = 0; break;
+                case VX_CHANNEL_G:
+                    cidx = 1; break;
+                case VX_CHANNEL_B:
+                    cidx = 2; break;
+                case VX_CHANNEL_A:
+                    cidx = 3; break;
+                default:
+                    return VX_ERROR_INVALID_PARAMETERS;
+            }
             status = vxCopyPlaneToImage(src, 0, cidx, 1, dst);
             break;
         case VX_DF_IMAGE_NV12:
@@ -317,6 +316,17 @@ vx_status vxChannelExtract(vx_image src, vx_scalar channel, vx_image dst)
             break;
         case VX_DF_IMAGE_IYUV:
         case VX_DF_IMAGE_YUV4:
+            switch (chan)
+            {
+                case VX_CHANNEL_Y:
+                    cidx = 0; break;
+                case VX_CHANNEL_U:
+                    cidx = 1; break;
+                case VX_CHANNEL_V:
+                    cidx = 2; break;
+                default:
+                    return VX_ERROR_INVALID_PARAMETERS;
+            }
             status = vxCopyPlaneToImage(src, cidx, 0, 1, dst);
             break;
         case VX_DF_IMAGE_YUYV:

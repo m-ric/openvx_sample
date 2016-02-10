@@ -44,7 +44,7 @@ vx_action VX_CALLBACK example_maximacallback(vx_node node)
     vx_parameter param = vxGetParameterByIndex(node, 2); // max value
 
     status |= vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &maxima, sizeof(maxima));
-    status |= vxAccessScalarValue(maxima, &max_intensity);
+    status |= vxReadScalarValue(maxima, &max_intensity);
     if (status == VX_SUCCESS)
     {
         if (max_intensity > 10)
@@ -69,7 +69,7 @@ vx_graph vxPipelineGraphFactory(vx_context context)
     vx_enum channel = VX_CHANNEL_Y;
     vx_graph graph = vxCreateGraph(context);
     vxLoadKernels(context, "xyz");
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_image virts[] = {
             vxCreateVirtualImage(graph, 0, 0, VX_DF_IMAGE_VIRT),

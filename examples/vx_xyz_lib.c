@@ -45,7 +45,7 @@ vx_node vxXYZNode(vx_graph graph, vx_image input, vx_uint32 value, vx_image outp
         if (kernel)
         {
             node = vxCreateGenericNode(graph, kernel);
-            if (node)
+            if (vxGetStatus((vx_reference)node) == VX_SUCCESS)
             {
                 vx_status statuses[4];
                 vx_scalar scalar = vxCreateScalar(context, VX_TYPE_INT32, &value);
@@ -83,7 +83,7 @@ vx_status vxuXYZ(vx_context context, vx_image input, vx_uint32 value, vx_image o
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxXYZNode(graph, input, value, output, temp);
         if (node)

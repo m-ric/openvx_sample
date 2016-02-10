@@ -31,10 +31,11 @@ vx_status vxAbsDiff(vx_image in1, vx_image in2, vx_image output)
     void *src_base[2] = {NULL, NULL};
     vx_imagepatch_addressing_t dst_addr, src_addr[2];
     vx_rectangle_t rect, r_in1, r_in2;
-    vx_df_image format;
+    vx_df_image format, dst_format;
     vx_status status = VX_SUCCESS;
 
     vxQueryImage(in1, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
+    vxQueryImage(output, VX_IMAGE_ATTRIBUTE_FORMAT, &dst_format, sizeof(dst_format));
     status  = vxGetValidRegionImage(in1, &r_in1);
     status |= vxGetValidRegionImage(in2, &r_in2);
     vxFindOverlapRectangle(&r_in1, &r_in2, &rect);
@@ -66,11 +67,23 @@ vx_status vxAbsDiff(vx_image in1, vx_image in2, vx_image output)
                     vxFormatImagePatchAddress2d(src_base[0], x, y, &src_addr[0]),
                     vxFormatImagePatchAddress2d(src_base[1], x, y, &src_addr[1]),
                 };
-                vx_uint16 *dst = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
-                if (*src[0] > *src[1])
-                    *dst = *src[0] - *src[1];
-                else
-                    *dst = *src[1] - *src[0];
+                if (dst_format == VX_DF_IMAGE_S16)
+                {
+                    vx_int16 *dst = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
+                    vx_uint32 val;
+                    if (*src[0] > *src[1])
+                        val = *src[0] - *src[1];
+                    else
+                        val = *src[1] - *src[0];
+                    *dst = (vx_int16)((val > 32767) ? 32767 : val);
+                }
+                else if (dst_format == VX_DF_IMAGE_U16) {
+                    vx_uint16 *dst = vxFormatImagePatchAddress2d(dst_base, x, y, &dst_addr);
+                    if (*src[0] > *src[1])
+                        *dst = *src[0] - *src[1];
+                    else
+                        *dst = *src[1] - *src[0];
+                }
             }
             else if (format == VX_DF_IMAGE_U16)
             {

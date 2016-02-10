@@ -417,6 +417,7 @@ void vxContaminateGraphs(vx_reference ref)
         /*! \internal Scan the entire context for graphs which may contain
          * this reference and mark them as unverified.
          */
+        vxSemWait(&context->base.lock);
         for (r = 0u; r < context->num_references; r++)
         {
             if (context->reftable[r] == NULL)
@@ -445,6 +446,8 @@ void vxContaminateGraphs(vx_reference ref)
                 }
             }
         }
+        vxSemPost(&context->base.lock);
+
     }
 }
 
@@ -457,14 +460,10 @@ VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context c)
     vx_graph_t * graph = NULL;
     vx_context_t *context = (vx_context_t *)c;
 
-    if (vxIsValidContext(context) == vx_false_e)
-    {
-        VX_PRINT(VX_ZONE_ERROR,"Context in %s is invalid!\n", __FUNCTION__);
-    }
-    else
+    if (vxIsValidContext(context) == vx_true_e)
     {
         graph = (vx_graph)vxCreateReference(context, VX_TYPE_GRAPH, VX_EXTERNAL, &context->base);
-        if (graph && graph->base.type == VX_TYPE_GRAPH)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS && graph->base.type == VX_TYPE_GRAPH)
         {
             vxInitPerf(&graph->perf);
             vxCreateSem(&graph->lock, 1);
@@ -472,10 +471,11 @@ VX_API_ENTRY vx_graph VX_API_CALL vxCreateGraph(vx_context c)
             vxPrintReference((vx_reference_t *)graph);
         }
     }
+
     return (vx_graph)graph;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetGraphAttribute(vx_graph graph, vx_enum attribute, void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetGraphAttribute(vx_graph graph, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     if (vxIsValidSpecificReference(&graph->base, VX_TYPE_GRAPH) == vx_true_e)
@@ -576,6 +576,196 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseGraph(vx_graph *g)
     return vxReleaseReferenceInt((vx_reference *)g, VX_TYPE_GRAPH, VX_EXTERNAL, NULL);
 }
 
+/* Do a topological in-place sort of the nodes in list, with current
+   order maintained between independent nodes. */
+static void vxTopologicalSort(vx_graph graph, vx_node *list, vx_uint32 nnodes)
+{
+   /* Knuth TAoCP algorithm 2.2.3 T.
+      Nodes and their parameters are the "objects" which have partial-order
+      relations (with "<" noting the similar-looking general symbol for
+      relational order, not the specific less-than relation), and it's
+      always pair-wise: node < parameter for outputs,
+      parameter < node for inputs. */
+    vx_uint32 nobjects;         /* Number of objects; "n" in TAoCP. */
+    vx_uint32 nremain;          /* Number of remaining objects to be "output"; "N" in TAoCP. */
+    vx_uint32 objectno;         /* Running count, 1-based. */
+    vx_uint32 j, k, n, r, f;
+    vx_uint32 outputnr;         /* Running count of nodes as they're "output". */
+
+    struct direct_successor {
+        vx_uint32 suc;
+        struct direct_successor *next;
+    };
+
+    struct object_relations {
+        union {
+            vx_uint32 count;
+            vx_uint32 qlink;
+        } u;
+        struct direct_successor *top;
+        vx_reference ref;
+    };
+
+    struct object_relations *x;
+    struct direct_successor *suc_next_table;
+    struct direct_successor *avail;
+
+    /* Visit each node in the list and its in- and out-parameters,
+       clearing all indices. Find upper bound for nobjects, for use when
+       allocating x (X in the algorithm). This number is also the exact
+       number of relations, for use with suc_next_table (the unnamed
+       "suc, next" table in the algorithm). */
+    vx_uint32 max_n_objects_relations = nnodes;
+
+    for (n = 0; n < nnodes; n++)
+    {
+        vx_uint32 parmno;
+
+        max_n_objects_relations += list[n]->kernel->signature.num_parameters;
+
+        for (parmno = 0; parmno < list[n]->kernel->signature.num_parameters; parmno++)
+            if (list[n]->parameters[parmno] != NULL)
+                list[n]->parameters[parmno]->index = 0;
+            else
+                /* Ignore NULL parameters. */
+                max_n_objects_relations--;
+    }
+
+    /* Visit each node and its parameters, setting all indices. Allocate
+       and initialize the node + parameters-list. The x table is
+       1-based; index 0 is a sentinel.
+       (This is step T1.) */
+    x = calloc(max_n_objects_relations + 1, sizeof (*x));
+    suc_next_table = calloc(max_n_objects_relations, sizeof (*x));
+
+    avail = suc_next_table;
+
+    for (objectno = 1; objectno <= nnodes; objectno++)
+    {
+        vx_node node = list[objectno - 1];
+        node->base.index = objectno;
+        x[objectno].ref = (vx_reference)node;
+    }
+
+    /* While we visit the parameters (setting their index if 0), we
+       "input" the relation. We don't have to iterate separately after
+       all parameters are "indexed", as all nodes are already in place
+       (and "indexed") and a parameter doesn't have a direct relation
+       with another parameter.
+       (Steps T2 and T3). */
+    for (n = 0; n < nnodes; n++)
+    {
+        vx_uint32 parmno;
+
+        for (parmno = 0; parmno < list[n]->kernel->signature.num_parameters; parmno++)
+        {
+            vx_reference ref = list[n]->parameters[parmno];
+            struct direct_successor *p;
+
+            if (ref == NULL)
+                continue;
+
+            if (ref->index == 0)
+            {
+                x[objectno].ref = ref;
+                ref->index = objectno++;
+            }
+
+            /* Step T2. */
+            if (list[n]->kernel->signature.directions[parmno] == VX_INPUT)
+            {
+                /* parameter < node */
+                j = ref->index;
+                k = n + 1;
+            }
+            else
+            {
+                /* node < parameter */
+                k = ref->index;
+                j = n + 1;
+            }
+
+            /* Step T3. */
+            x[k].u.count++;
+            p = avail++;
+            p->suc = k;
+            p->next = x[j].top;
+            x[j].top = p;
+        }
+    }
+
+    /* With a 1-based index, we need to back-off one to get the number of objects. */
+    nobjects = objectno - 1;
+    nremain = nobjects;
+
+    /* At this point, we could visit all the nodes in
+       x[1..graph->numNodes] (all the first graph->numNodes in x are
+       nodes) and put those with
+       count <= node->kernel->signature.num_parameters in graph->heads
+       (as a node is always dependent on its input parameters and all
+       nodes have inputs, but some may be NULL), avoiding the
+       O(numNodes**2) loop later in our caller. */
+
+    /* Step T4. Note that we're not zero-based but 1-based; 0 and x[0]
+       are sentinels. */
+    r = 0;
+    x[0].u.qlink = 0;
+    for (k = 1; k <= nobjects; k++)
+    {
+        if (x[k].u.count == 0)
+        {
+            x[r].u.qlink = k;
+            r = k;
+        }
+    }
+
+    f = x[0].u.qlink;
+    outputnr = 0;
+
+    /* Step T5. (We don't output a final 0 as present in the algorithm.) */
+    while (f != 0)
+    {
+        struct direct_successor *p;
+
+        /* This is our "output". Nodes only; we don't otherwise make
+           use the order in which parameters are being processed. */
+        if (x[f].ref->type == VX_TYPE_NODE)
+            list[outputnr++] = (vx_node)x[f].ref;
+        nremain--;
+        p = x[f].top;
+
+        /* Step T6. */
+        while (p != NULL)
+        {
+            if (--x[p->suc].u.count == 0)
+            {
+                x[r].u.qlink = p->suc;
+                r = p->suc;
+            }
+            p = p->next;
+        }
+
+        /* Step T7 */
+        f = x[f].u.qlink;
+    }
+
+    /* Step T8.
+       At this point, we could inspect nremain and if non-zero, we have
+       a cycle. To wit, we can avoid the O(numNodes**2) loop later in
+       our caller. We have to do check for cycles anyway, because if
+       there was a cycle we need to restore *all* the nodes into list[],
+       or else they can't be disposed of properly. We use the original
+       order, both for simplicity and because the caller might be making
+       invalid assumptions; having passed an incorrect graph is cause
+       for concern about integrity. */
+    if (nremain != 0)
+        for (n = 0; n < nnodes; n++)
+            list[n] = (vx_node)x[n+1].ref;
+
+    free(suc_next_table);
+    free(x);
+}
+
 VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph)
 {
     vx_status status = VX_SUCCESS;
@@ -589,6 +779,15 @@ VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph)
 
         /* lock the graph */
         vxSemWait(&graph->base.lock);
+
+    /* To properly deal with parameter dependence in the graph, the
+       nodes have to be in topological order when their parameters
+       are inspected and their dependent attributes -such as geometry
+       and type- are propagated. */
+        VX_PRINT(VX_ZONE_GRAPH,"###########################\n");
+        VX_PRINT(VX_ZONE_GRAPH,"Topological Sort Phase\n");
+        VX_PRINT(VX_ZONE_GRAPH,"###########################\n");
+        vxTopologicalSort(graph, graph->nodes, graph->numNodes);
 
         VX_PRINT(VX_ZONE_GRAPH,"###########################\n");
         VX_PRINT(VX_ZONE_GRAPH,"Parameter Validation Phase! (%d)\n", status);
@@ -686,7 +885,18 @@ VX_API_ENTRY vx_status VX_API_CALL vxVerifyGraph(vx_graph graph)
                         VX_PRINT(VX_ZONE_GRAPH, "Virtual Reference detected at kernel %S parameter %u\n",
                                 graph->nodes[n]->kernel->name,
                                 p);
-                        if (vref->scope->type == VX_TYPE_GRAPH && vref->scope != (vx_reference_t *)graph)
+                        if (vref->scope->type == VX_TYPE_GRAPH &&
+                            vref->scope != (vx_reference_t *)graph &&
+                            /* We check only one level up; we make use of the
+                               knowledge that this implementation has no more
+                               than one level of child-graphs. (Nodes are only
+                               one level; no child-graph-using sode is composed
+                               from other child-graph-using nodes.) We need
+                               this check (for example) for a virtual image
+                               being an output parameter to a node for which
+                               this graph is the child-graph implementation,
+                               like in vx_bug13517.c. */
+                            vref->scope != (vx_reference_t *)graph->parentGraph)
                         {
                             /* major fault! */
                             status = VX_ERROR_INVALID_SCOPE;
@@ -1259,7 +1469,6 @@ static vx_status vxExecuteGraph(vx_graph graph, vx_uint32 depth)
             return status;
         }
     }
-restart:
     VX_PRINT(VX_ZONE_GRAPH,"************************\n");
     VX_PRINT(VX_ZONE_GRAPH,"*** PROCESSING GRAPH ***\n");
     VX_PRINT(VX_ZONE_GRAPH,"************************\n");
@@ -1327,8 +1536,7 @@ restart:
                         }
                     }
 
-                    if ((action == VX_ACTION_ABANDON) ||
-                        (action == VX_ACTION_RESTART))
+                    if (action == VX_ACTION_ABANDON)
                     {
                         break;
                     }
@@ -1367,8 +1575,7 @@ restart:
         }
 #endif
 
-        if ((action == VX_ACTION_ABANDON) ||
-            (action == VX_ACTION_RESTART))
+        if (action == VX_ACTION_ABANDON)
         {
             break;
         }
@@ -1382,10 +1589,6 @@ restart:
 
     } while (numNext > 0);
 
-    if (action == VX_ACTION_RESTART)
-    {
-        goto restart;
-    }
     if (action == VX_ACTION_ABANDON)
     {
         status = VX_ERROR_GRAPH_ABANDONED;
@@ -1396,13 +1599,15 @@ restart:
     VX_PRINT(VX_ZONE_GRAPH,"Process returned status %d\n", status);
     for (n = 0; n < graph->numNodes; n++)
     {
-        VX_PRINT(VX_ZONE_PERF,"nodes[%u] %s[%d] last:"VX_FMT_TIME"ms avg:"VX_FMT_TIME"ms min:"VX_FMT_TIME"ms\n",
+        VX_PRINT(VX_ZONE_PERF,"nodes[%u] %s[%d] last:"VX_FMT_TIME"ms avg:"VX_FMT_TIME"ms min:"VX_FMT_TIME "ms max:"VX_FMT_TIME"\n",
                  n,
                  graph->nodes[n]->kernel->name,
                  graph->nodes[n]->kernel->enumeration,
                  vxTimeToMS(graph->nodes[n]->perf.tmp),
                  vxTimeToMS(graph->nodes[n]->perf.avg),
-                 vxTimeToMS(graph->nodes[n]->perf.min));
+                 vxTimeToMS(graph->nodes[n]->perf.min),
+                 vxTimeToMS(graph->nodes[n]->perf.max)
+                 );
     }
     return status;
 }

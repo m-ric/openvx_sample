@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -24,9 +24,10 @@
 #ifndef _VX_HELPER_H_
 #define _VX_HELPER_H_
 
+#include <VX/vx.h>
+
 /*! \file
  * \brief The OpenVX Helper Library Interface.
- * \author Erik Rainey <erik.rainey@gmail.com>
  *
  * \defgroup group_helper OpenVX Helper
  * \brief The helper is an non-standardized set of convenience constructs for OpenVX.

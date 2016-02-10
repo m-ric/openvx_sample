@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -27,8 +27,8 @@
 /*! \file
  * \brief The OpenVX XML Schema Extension Header.
  *
- * \defgroup group_xml XML API
- * \brief The OpenVX XML Schema Export and Import API.
+ * \defgroup group_xml Extension: XML API
+ * \brief The Khronos Extension for OpenVX XML Import and Export Support.
  */
 
 #define OPENVX_KHR_XML  "vx_khr_xml"
@@ -38,7 +38,7 @@
 /*! \brief Defines the maximum number of characters in a reference name string.
  * \ingroup group_xml
  * \see vxSetReferenceName
- * \see vxGetReferenceByName
+ * \see vxGetImportReferenceByName
  */
 #define VX_MAX_REFERENCE_NAME (64)
 
@@ -97,7 +97,7 @@ extern "C" {
  * should be inclusive from index number 0 to [number of references - 1]. For example,
  * if there are 20 references in the xml file, none of the reference indices should be >= 20.
  * \return A <tt>\ref vx_status_e</tt> enumeration.
- * \see http://www.khronos.org/openvx/OpenVX.xsd
+ * \see https://www.khronos.org/registry/vx/schema/openvx-1-0.xsd
  * \ingroup group_xml
  */
 VX_API_ENTRY vx_status VX_API_CALL vxExportToXML(vx_context context, vx_char xmlfile[]);
@@ -108,13 +108,13 @@ VX_API_ENTRY vx_status VX_API_CALL vxExportToXML(vx_context context, vx_char xml
  * \param [in] xmlfile The XML file to read.
  * \note The reference indices in the import object corresponds with the reference numbers in the
  * XML file. It is assumed that the program has some means to know which references to use from
- * imported list (either by name: <tt>\ref vxGetReferenceByName</tt>, or by index from looking at the XML
- * file (debug use case): <tt>\ref vxGetReferenceByIndex</tt>).  Alternativly, the program can use
- * <tt>\ref vxGetReferenceByIndex</tt> in a loop and query each one to understand what was imported. After
+ * imported list (either by name: <tt>\ref vxGetImportReferenceByName</tt>, or by index from looking at the XML
+ * file (debug use case): <tt>\ref vxGetImportReferenceByIndex</tt>).  Alternativly, the program can use
+ * <tt>\ref vxGetImportReferenceByIndex</tt> in a loop and query each one to understand what was imported. After
  * all references of interest have been retrieved, this import obects should be released using
  * <tt>\ref vxReleaseImport</tt>.
  * \return \ref vx_import object containing references to the imported objects in the context
- * \see http://www.khronos.org/openvx/OpenVX.xsd
+ * \see https://www.khronos.org/registry/vx/schema/openvx-1-0.xsd
  * \ingroup group_xml
  */
 VX_API_ENTRY vx_import VX_API_CALL vxImportFromXML(vx_context context, vx_char xmlfile[]);
@@ -125,7 +125,7 @@ VX_API_ENTRY vx_import VX_API_CALL vxImportFromXML(vx_context context, vx_char x
  * This function is used to associate a name to a reference. This name
  * can be used by the OpenVX implementation in log messages and any
  * other reporting mechanisms.  It is also intended to be used by
- * <tt>\ref vxGetReferenceByName</tt> to retrieve a named reference from
+ * <tt>\ref vxGetImportReferenceByName</tt> to retrieve a named reference from
  * a \ref vx_import object.
  *
  * The OpenVX implementation will not check if the name is unique in
@@ -155,7 +155,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetReferenceName(vx_reference ref, const vx
  * \pre <tt>\ref vxImportFromXML</tt>
  * \ingroup group_xml
  */
-VX_API_ENTRY vx_reference VX_API_CALL vxGetReferenceByName(vx_import import, const vx_char *name);
+VX_API_ENTRY vx_reference VX_API_CALL vxGetImportReferenceByName(vx_import import, const vx_char *name);
 
 /*! \brief Used to retrieve a reference by the index from the import.
  * \param [in] import The reference to the import object.
@@ -169,7 +169,7 @@ VX_API_ENTRY vx_reference VX_API_CALL vxGetReferenceByName(vx_import import, con
  * \pre <tt>\ref vxImportFromXML</tt>
  * \ingroup group_xml
  */
-VX_API_ENTRY vx_reference VX_API_CALL vxGetReferenceByIndex(vx_import import, vx_uint32 index);
+VX_API_ENTRY vx_reference VX_API_CALL vxGetImportReferenceByIndex(vx_import import, vx_uint32 index);
 
 /*! \brief Used to query the import about its properties.
  * \param [in] import The reference to the import object.
@@ -203,7 +203,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseImport(vx_import *import);
  * \retval VX_SUCCESS No errors.
  * \retval VX_ERROR_INVALID_REFERENCE If reference is not a <tt>\ref vx_reference</tt>.
  * \note After returning from this function the reference will be zeroed.
- * \pre <tt>\ref vxGetReferenceByName</tt> or <tt>\ref vxGetReferenceByIndex</tt>
+ * \pre <tt>\ref vxGetImportReferenceByName</tt> or <tt>\ref vxGetImportReferenceByIndex</tt>
  * \ingroup group_xml
  */
 VX_API_ENTRY vx_status VX_API_CALL vxReleaseReference(vx_reference *ref);

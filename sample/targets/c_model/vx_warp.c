@@ -32,7 +32,7 @@
 #include <vx_internal.h>
 #include <c_model.h>
 
-static vx_status VX_CALLBACK vxWarpPerspectiveKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxWarpPerspectiveKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 4)
     {
@@ -49,7 +49,7 @@ static vx_status VX_CALLBACK vxWarpPerspectiveKernel(vx_node node, vx_reference 
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxWarpAffineKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxWarpAffineKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 4)
     {
@@ -124,7 +124,7 @@ static vx_status vxWarpInputValidator(vx_node node, vx_uint32 index, vx_size mat
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum interp = 0;
-                    vxAccessScalarValue(scalar, &interp);
+                    vxReadScalarValue(scalar, &interp);
                     if ((interp == VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR) ||
                         (interp == VX_INTERPOLATION_TYPE_BILINEAR))
                     {

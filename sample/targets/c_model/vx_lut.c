@@ -34,7 +34,7 @@
 
 #include <math.h>
 
-static vx_status VX_CALLBACK vxTableLookupKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxTableLookupKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {

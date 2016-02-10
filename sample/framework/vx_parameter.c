@@ -69,12 +69,13 @@ vx_bool vxIsValidState(vx_enum state)
 VX_API_ENTRY vx_parameter VX_API_CALL vxGetKernelParameterByIndex(vx_kernel kernel, vx_uint32 index)
 {
     vx_parameter parameter = NULL;
+
     if (vxIsValidSpecificReference(&kernel->base, VX_TYPE_KERNEL) == vx_true_e)
     {
         if (index < VX_INT_MAX_PARAMS && index < kernel->signature.num_parameters)
         {
             parameter = (vx_parameter)vxCreateReference(kernel->base.context, VX_TYPE_PARAMETER, VX_EXTERNAL, &kernel->base.context->base);
-            if (parameter && parameter->base.type == VX_TYPE_PARAMETER)
+            if (vxGetStatus((vx_reference)parameter) == VX_SUCCESS && parameter->base.type == VX_TYPE_PARAMETER)
             {
                 parameter->index = index;
                 parameter->node = NULL;
@@ -89,6 +90,7 @@ VX_API_ENTRY vx_parameter VX_API_CALL vxGetKernelParameterByIndex(vx_kernel kern
             parameter = (vx_parameter_t *)vxGetErrorObject(kernel->base.context, VX_ERROR_INVALID_PARAMETERS);
         }
     }
+
     return parameter;
 }
 
@@ -110,7 +112,7 @@ VX_API_ENTRY vx_parameter VX_API_CALL vxGetParameterByIndex(vx_node node, vx_uin
         if (/*0 <= index &&*/ index < VX_INT_MAX_PARAMS && index < node->kernel->signature.num_parameters)
         {
             param = (vx_parameter)vxCreateReference(node->base.context, VX_TYPE_PARAMETER, VX_EXTERNAL, &node->base);
-            if (param && param->base.type == VX_TYPE_PARAMETER)
+            if (vxGetStatus((vx_reference)param) == VX_SUCCESS && param->base.type == VX_TYPE_PARAMETER)
             {
                 param->index = index;
                 param->node = node;
@@ -254,20 +256,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetParameterByIndex(vx_node node, vx_uint32
     /* actual change of the node parameter */
     vxNodeSetParameter(node, index, value);
 
-    /* if the node has a child graph, find out which parameter is this */
-    if (node->child)
-    {
-        vx_uint32 p = 0;
-        for (p = 0; p < node->child->numParams; p++)
-        {
-            if ((node->child->parameters[p].node == node) &&
-                (node->child->parameters[p].index == index))
-            {
-                status = vxSetGraphParameterByIndex((vx_graph)node->child, p, value);
-                break;
-            }
-        }
-    }
+    /* Note that we don't need to do anything special for parameters to child graphs. */
 
 exit:
     if (status == VX_SUCCESS)

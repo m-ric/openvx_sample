@@ -74,7 +74,7 @@ vx_status vxAccumulateWeighted(vx_image input, vx_scalar scalar, vx_image accum)
     rect.end_y = height;
     status |= vxAccessImagePatch(input, &rect, 0, &src_addr, (void **)&src_base,VX_READ_AND_WRITE);
     status |= vxAccessImagePatch(accum, &rect, 0, &dst_addr, (void **)&dst_base,VX_READ_AND_WRITE);
-    status |= vxAccessScalarValue(scalar, &alpha);
+    status |= vxReadScalarValue(scalar, &alpha);
     for (y = 0; y < height; y++)
     {
         for (x = 0; x < width; x++)
@@ -101,7 +101,7 @@ vx_status vxAccumulateSquare(vx_image input, vx_scalar scalar, vx_image accum)
     vx_uint32 shift = 0u;
     vx_status status = VX_SUCCESS;
 
-    vxAccessScalarValue(scalar, &shift);
+    vxReadScalarValue(scalar, &shift);
     status = vxGetValidRegionImage(input, &rect);
     status |= vxAccessImagePatch(input, &rect, 0, &src_addr, (void **)&src_base,VX_READ_AND_WRITE);
     status |= vxAccessImagePatch(accum, &rect, 0, &dst_addr, (void **)&dst_base,VX_READ_AND_WRITE);

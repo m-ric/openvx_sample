@@ -32,7 +32,7 @@
 #include <VX/vx_lib_debug.h>
 #include <VX/vx_helper.h>
 
-static vx_status VX_CALLBACK vxFillImageKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxFillImageKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_SUCCESS;
     if (num == 2)
@@ -44,7 +44,7 @@ static vx_status VX_CALLBACK vxFillImageKernel(vx_node node, vx_reference *param
         vx_size planes = 0u;
         vx_int32 i = 0;
 
-        vxAccessScalarValue(fill, value);
+        vxReadScalarValue(fill, value);
         vxQueryImage(image, VX_IMAGE_ATTRIBUTE_PLANES, &planes, sizeof(planes));
         for (p = 0u; p < planes; p++)
         {

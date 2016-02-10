@@ -34,7 +34,8 @@ vx_matrix example_random_matrix(vx_context context)
     const vx_size columns = 3;
     const vx_size rows = 4;
     vx_matrix matrix = vxCreateMatrix(context, VX_TYPE_FLOAT32, columns, rows);
-    if (matrix)
+    vx_status status = vxGetStatus((vx_reference)matrix);
+    if (status == VX_SUCCESS)
     {
         vx_int32 j, i;
 #if defined(OPENVX_USE_C99)
@@ -42,7 +43,7 @@ vx_matrix example_random_matrix(vx_context context)
 #else
         vx_float32 *mat = (vx_float32 *)malloc(rows*columns*sizeof(vx_float32));
 #endif
-        if (vxAccessMatrix(matrix, mat) == VX_SUCCESS) {
+        if (vxReadMatrix(matrix, mat) == VX_SUCCESS) {
             for (j = 0; j < rows; j++)
                 for (i = 0; i < columns; i++)
 #if defined(OPENVX_USE_C99)
@@ -50,7 +51,7 @@ vx_matrix example_random_matrix(vx_context context)
 #else
                     mat[j*columns + i] = (vx_float32)rand()/(vx_float32)RAND_MAX;
 #endif
-            vxCommitMatrix(matrix, mat);
+            vxWriteMatrix(matrix, mat);
         }
 #if !defined(OPENVX_USE_C99)
         free(mat);

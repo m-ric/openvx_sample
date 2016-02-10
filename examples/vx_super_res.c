@@ -50,9 +50,6 @@ void userCalculatePerspectiveTransformFromLK(vx_matrix matrix_forward, vx_matrix
     if (olen != nlen)
         return;
 
-    vxAccessMatrix(matrix_backward, NULL);
-    vxAccessMatrix(matrix_forward, NULL);
-
     vxAccessArrayRange(old_features, 0, olen, &old_features_stride, (void **) &old_features_ptr, VX_READ_ONLY);
     vxAccessArrayRange(new_features, 0, nlen, &new_features_stride, (void **) &new_features_ptr, VX_READ_ONLY);
 
@@ -89,8 +86,8 @@ void userCalculatePerspectiveTransformFromLK(vx_matrix matrix_forward, vx_matrix
     vxCommitArrayRange(old_features, 0, 0, old_features_ptr);
     vxCommitArrayRange(new_features, 0, 0, new_features_ptr);
 
-    vxCommitMatrix(matrix_forward, mat1);
-    vxCommitMatrix(matrix_backward, mat2);
+    vxWriteMatrix(matrix_forward, mat1);
+    vxWriteMatrix(matrix_backward, mat2);
 }
 
 /*!
@@ -129,9 +126,9 @@ int example_super_resolution(int argc, char *argv[])
     vx_scalar min_distance_s = vxCreateScalar(context, VX_TYPE_INT32, &min_distance);
     vx_scalar sensitivity_s = vxCreateScalar(context, VX_TYPE_FLOAT32, &sensitivity);
     vx_scalar sens_thresh_s = vxCreateScalar(context, VX_TYPE_INT32, &sens_thresh);
-    vx_scalar num_corners = vxCreateScalar(context, VX_TYPE_UINT32, NULL);
+    vx_scalar num_corners = vxCreateScalar(context, VX_TYPE_SIZE, NULL);
 
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_image images[] =
         { vxCreateImage(context, width, height, VX_DF_IMAGE_UYVY),     // index 0:
@@ -159,7 +156,7 @@ int example_super_resolution(int argc, char *argv[])
         vx_graph graphs[] =
         { vxCreateGraph(context), vxCreateGraph(context), vxCreateGraph(context), vxCreateGraph(context), };
         vxLoadKernels(context, "openvx-debug");
-        if (graphs[0])
+        if (vxGetStatus((vx_reference)graphs[0]) == VX_SUCCESS)
         {
             vxChannelExtractNode(graphs[0], images[0], VX_CHANNEL_Y, images[1]); // One iteration of super resolution calculation
             vxScaleImageNode(graphs[0], images[1], images[2], VX_INTERPOLATION_TYPE_BILINEAR);
@@ -173,7 +170,7 @@ int example_super_resolution(int argc, char *argv[])
             vxAccumulateWeightedImageNode(graphs[0], images[9], alpha_s, images[10]);
 
         }
-        if (graphs[1])
+        if (vxGetStatus((vx_reference)graphs[1]) == VX_SUCCESS)
         {
             vxChannelExtractNode(graphs[1], images[0], VX_CHANNEL_Y, images[1]); // One iteration of super resolution calculation
             vxGaussianPyramidNode(graphs[1], images[1], pyramid_new);
@@ -181,7 +178,7 @@ int example_super_resolution(int argc, char *argv[])
             vxOpticalFlowPyrLKNode(graphs[1], pyramid_old, pyramid_new, old_features, old_features, new_features,
                     criteria, epsilon_s, num_iterations_s, use_initial_estimate_s, winSize);
         }
-        if (graphs[2])
+        if (vxGetStatus((vx_reference)graphs[2]) == VX_SUCCESS)
         {
             vxChannelExtractNode(graphs[2], images[0], VX_CHANNEL_Y, images[1]); // One iteration of super resolution calculation
 
@@ -190,7 +187,7 @@ int example_super_resolution(int argc, char *argv[])
             vxGaussianPyramidNode(graphs[2], images[1], pyramid_old);
             vxScaleImageNode(graphs[2], images[1], images[16], VX_INTERPOLATION_TYPE_BILINEAR);
         }
-        if (graphs[3])
+        if (vxGetStatus((vx_reference)graphs[3]) == VX_SUCCESS)
         {
             vxSubtractNode(graphs[3], images[10], images[16], VX_CONVERT_POLICY_SATURATE, images[17]);
             vxAccumulateWeightedImageNode(graphs[3], images[17], tau_s, images[16]);

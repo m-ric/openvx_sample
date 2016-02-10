@@ -32,7 +32,7 @@
 #include <VX/vx_lib_extras.h>
 #include <VX/vx_helper.h>
 
-static vx_status VX_CALLBACK vxScharr3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxScharr3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 3)
@@ -160,7 +160,7 @@ static vx_int16 ops7_y[7][7] = {
         { 1,  6, 15,  20, 15,  6, 1},
 };
 
-static vx_status VX_CALLBACK vxSobelMxNKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxSobelMxNKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 4)
@@ -187,7 +187,7 @@ static vx_status VX_CALLBACK vxSobelMxNKernel(vx_node node, vx_reference *parame
         {
             return VX_ERROR_INVALID_PARAMETERS;
         }
-        vxAccessScalarValue(win, &ws);
+        vxReadScalarValue(win, &ws);
         b = ws/2;
 
         if (ws == 3)
@@ -353,7 +353,7 @@ static vx_status VX_CALLBACK vxGradientMxNInputValidator(vx_node node, vx_uint32
                 if (type == VX_TYPE_INT32)
                 {
                     vx_uint32 ws = 0;
-                    vxAccessScalarValue(win, &ws);
+                    vxReadScalarValue(win, &ws);
                     if (ws == 3 || ws == 5 || ws == 7)
                     {
                         status = VX_SUCCESS;

@@ -92,7 +92,7 @@ namespace android
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
         jbyte v = 0;
-        vxAccessScalarValue(s, &v);
+        vxReadScalarValue(s, &v);
         return v;
     }
 
@@ -100,7 +100,7 @@ namespace android
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
         jshort v = 0;
-        vxAccessScalarValue(s, &v);
+        vxReadScalarValue(s, &v);
         return v;
     }
 
@@ -108,7 +108,7 @@ namespace android
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
         jint v = 0;
-        vxAccessScalarValue(s, &v);
+        vxReadScalarValue(s, &v);
         return v;
     }
 
@@ -116,7 +116,7 @@ namespace android
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
         jlong v = 0;
-        vxAccessScalarValue(s, &v);
+        vxReadScalarValue(s, &v);
         return v;
     }
 
@@ -124,7 +124,7 @@ namespace android
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
         jfloat v = 0;
-        vxAccessScalarValue(s, &v);
+        vxReadScalarValue(s, &v);
         return v;
     }
 
@@ -132,44 +132,44 @@ namespace android
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
         jdouble v = 0;
-        vxAccessScalarValue(s, &v);
+        vxReadScalarValue(s, &v);
         return v;
     }
 
     static void setByteValue(JNIEnv *env, jobject obj, jbyte v)
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
-        vxCommitScalarValue(s, &v);
+        vxWriteScalarValue(s, &v);
     }
 
     static void setShortValue(JNIEnv *env, jobject obj, jshort v)
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
-        vxCommitScalarValue(s, &v);
+        vxWriteScalarValue(s, &v);
     }
 
     static void setIntValue(JNIEnv *env, jobject obj, jint v)
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
-        vxCommitScalarValue(s, &v);
+        vxWriteScalarValue(s, &v);
     }
 
     static void setLongValue(JNIEnv *env, jobject obj, jlong v)
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
-        vxCommitScalarValue(s, &v);
+        vxWriteScalarValue(s, &v);
     }
 
     static void setFloatValue(JNIEnv *env, jobject obj, jfloat v)
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
-        vxCommitScalarValue(s, &v);
+        vxWriteScalarValue(s, &v);
     }
 
     static void setDoubleValue(JNIEnv *env, jobject obj, jdouble v)
     {
         vx_scalar s = (vx_scalar)GetHandle(env, obj, ScalarClass, handleName);
-        vxCommitScalarValue(s, &v);
+        vxWriteScalarValue(s, &v);
     }
 
     static JNINativeMethod method_table[] = {

@@ -53,34 +53,18 @@ static vx_param_description_t pyramid_kernel_params[] = {
 
 /*! \note Look at \ref vxPyramidNode to see how this pyramid construction works */
 
-static vx_status VX_CALLBACK vxPyramidKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
-{
-    vx_status status = VX_FAILURE;
-    if (num == dimof(pyramid_kernel_params))
-    {
-        vx_graph graph = vxGetChildGraphOfNode(node);
-        status = vxProcessGraph(graph);
-    }
-    return status;
-}
 
 static vx_convolution vxCreateGaussian5x5Convolution(vx_context context)
 {
     vx_convolution conv = vxCreateConvolution(context, 5, 5);
-    vx_status status = vxAccessConvolutionCoefficients(conv, NULL);
-    if (status != VX_SUCCESS)
-    {
-        vxReleaseConvolution(&conv);
-        return NULL;
-    }
-    status = vxCommitConvolutionCoefficients(conv, (vx_int16 *)gaussian5x5);
+    vx_status status = vxWriteConvolutionCoefficients(conv, (vx_int16 *)gaussian5x5);
     if (status != VX_SUCCESS)
     {
         vxReleaseConvolution(&conv);
         return NULL;
     }
 
-    vxSetConvolutionAttribute(conv, VX_CONVOLUTION_ATTRIBUTE_SCALE, (void *)&gaussian5x5scale, sizeof(vx_uint32));
+    status = vxSetConvolutionAttribute(conv, VX_CONVOLUTION_ATTRIBUTE_SCALE, (void *)&gaussian5x5scale, sizeof(vx_uint32));
     if (status != VX_SUCCESS)
     {
         vxReleaseConvolution(&conv);
@@ -89,10 +73,10 @@ static vx_convolution vxCreateGaussian5x5Convolution(vx_context context)
     return conv;
 }
 
-static vx_status VX_CALLBACK vxPyramidInitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxPyramidKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
-    vx_status status = VX_ERROR_INVALID_PARAMETERS;
-    if (num == 2)
+    vx_status status = VX_FAILURE;
+    if (num == dimof(pyramid_kernel_params))
     {
         vx_size lev, levels = 1;
         vx_border_mode_t border;
@@ -101,22 +85,19 @@ static vx_status VX_CALLBACK vxPyramidInitializer(vx_node node, vx_reference *pa
         vx_context context = vxGetContext((vx_reference)node);
         vx_graph graph = vxCreateGraph(context);
         vx_enum interp = VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR;
-        status = vxLoadKernels(context, "openvx-debug");
-        if (status != VX_SUCCESS)
-        {
-            return status;
-        }
+        status = VX_ERROR_INVALID_PARAMETERS;
 
         status = vxQueryNode(node, VX_NODE_ATTRIBUTE_BORDER_MODE, &border, sizeof(border));
         if (status != VX_SUCCESS)
         {
             return status;
         }
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_image level0 = vxGetPyramidLevel(gaussian, 0);
             vx_node copy = vxCopyImageNode(graph, input, level0);
-            vxReleaseImage(&level0);
+            graph->parentGraph = node->graph;
+            status |= vxReleaseImage(&level0);
             status |= vxQueryPyramid(gaussian, VX_PYRAMID_ATTRIBUTE_LEVELS, &levels, sizeof(levels));
             for (lev = 1; lev < levels; lev++)
             {
@@ -128,39 +109,23 @@ static vx_status VX_CALLBACK vxPyramidInitializer(vx_node node, vx_reference *pa
                 vx_node  gtmp = vxConvolveNode(graph, tmp0, conv, virt);
                 vx_node  stmp = vxScaleImageNode(graph, virt, tmp1, interp);
 
-                vxSetNodeAttribute(gtmp, VX_NODE_ATTRIBUTE_BORDER_MODE, &border, sizeof(border));
+                status |=vxSetNodeAttribute(gtmp, VX_NODE_ATTRIBUTE_BORDER_MODE, &border, sizeof(border));
                 /* decrements the references */
                 if (lev > 1) vxReleaseImage(&tmp0);
-                vxReleaseConvolution(&conv);
-                vxReleaseImage(&tmp1);
-                vxReleaseImage(&virt);
-                vxReleaseNode(&gtmp);
-                vxReleaseNode(&stmp);
+                status |= vxReleaseConvolution(&conv);
+                status |= vxReleaseImage(&tmp1);
+                status |= vxReleaseImage(&virt);
+                status |= vxReleaseNode(&gtmp);
+                status |= vxReleaseNode(&stmp);
             }
-            vxReleaseNode(&copy);
+            status |= vxReleaseNode(&copy);
             status = vxVerifyGraph(graph);
             if (status == VX_SUCCESS)
             {
-                status = VX_SUCCESS;
-                status |= vxAddParameterToGraphByIndex(graph, node, 0); // img
-                status |= vxAddParameterToGraphByIndex(graph, node, 1); // pyr
-                status = vxSetChildGraphOfNode(node, graph);
+                status = vxProcessGraph(graph);
+                status |= vxReleaseGraph(&graph);
             }
         }
-    }
-    return status;
-}
-
-static vx_status VX_CALLBACK vxPyramidDeinitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
-{
-    vx_status status = VX_ERROR_INVALID_PARAMETERS;
-    if (num == dimof(pyramid_kernel_params))
-    {
-        vx_graph graph = vxGetChildGraphOfNode(node);
-        vxReleaseGraph(&graph);
-        /* set graph to "null" */
-        vxSetChildGraphOfNode(node, 0);
-        status = VX_SUCCESS;
     }
     return status;
 }
@@ -236,16 +201,22 @@ static vx_status VX_CALLBACK vxPyramidOutputValidator(vx_node node, vx_uint32 in
 }
 
 
+static vx_status VX_CALLBACK vxPyramidInitializer(vx_node node, const vx_reference parameters[], vx_uint32 num)
+{
+    vx_context context = vxGetContext((vx_reference)node);
+    return vxLoadKernels(context, "openvx-debug");
+}
+
 
 vx_kernel_description_t pyramid_kernel = {
     VX_KERNEL_GAUSSIAN_PYRAMID,
-    "org.khronos.openvx.pyramid",
+    "org.khronos.openvx.gaussian_pyramid",
     vxPyramidKernel,
     pyramid_kernel_params, dimof(pyramid_kernel_params),
     vxPyramidInputValidator,
     vxPyramidOutputValidator,
     vxPyramidInitializer,
-    vxPyramidDeinitializer,
+    NULL,
 };
 
 

@@ -23,15 +23,17 @@
 
 #include <vx_internal.h>
 
-VX_API_ENTRY vx_distribution VX_API_CALL vxCreateDistribution(vx_context context, vx_size numBins, vx_size offset, vx_size range)
+VX_API_ENTRY vx_distribution VX_API_CALL vxCreateDistribution(vx_context context, vx_size numBins, vx_int32 offset, vx_uint32 range)
 {
     vx_distribution distribution = NULL;
+
     if (vxIsValidContext(context) == vx_true_e)
     {
         if ((numBins != 0) && (range != 0))
         {
             distribution = (vx_distribution)vxCreateReference(context, VX_TYPE_DISTRIBUTION, VX_EXTERNAL, &context->base);
-            if (distribution && distribution->base.type == VX_TYPE_DISTRIBUTION)
+            if ( vxGetStatus((vx_reference)distribution) == VX_SUCCESS &&
+                 distribution->base.type == VX_TYPE_DISTRIBUTION)
             {
                 distribution->memory.ndims = 2;
                 distribution->memory.nptrs = 1;
@@ -41,7 +43,7 @@ VX_API_ENTRY vx_distribution VX_API_CALL vxCreateDistribution(vx_context context
                 distribution->memory.dims[0][VX_DIM_Y] = 1;
                 distribution->window_x = (vx_uint32)range/(vx_uint32)numBins;
                 distribution->window_y = 1;
-                distribution->offset_x = (vx_uint32)offset;
+                distribution->offset_x = offset;
                 distribution->offset_y = 0;
             }
         }
@@ -52,6 +54,7 @@ VX_API_ENTRY vx_distribution VX_API_CALL vxCreateDistribution(vx_context context
             distribution = (vx_distribution)vxGetErrorObject(context, VX_ERROR_INVALID_PARAMETERS);
         }
     }
+
     return distribution;
 }
 
@@ -90,10 +93,10 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryDistribution(vx_distribution distribut
             }
             break;
         case VX_DISTRIBUTION_ATTRIBUTE_RANGE:
-            if (VX_CHECK_PARAM(ptr, size, vx_size, 0x3))
+            if (VX_CHECK_PARAM(ptr, size, vx_uint32, 0x3))
             {
-                *(vx_size*)ptr = (vx_size)(distribution->memory.dims[0][VX_DIM_X] *
-                                           distribution->window_x);
+                *(vx_uint32*)ptr = (vx_uint32)(distribution->memory.dims[0][VX_DIM_X] *
+                                               distribution->window_x);
             }
             else
             {
@@ -121,9 +124,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryDistribution(vx_distribution distribut
             }
             break;
         case VX_DISTRIBUTION_ATTRIBUTE_OFFSET:
-            if (VX_CHECK_PARAM(ptr, size, vx_size, 0x3))
+            if (VX_CHECK_PARAM(ptr, size, vx_int32, 0x3))
             {
-                *(vx_size*)ptr = (vx_size)distribution->offset_x;
+                *(vx_int32*)ptr = distribution->offset_x;
             }
             else
             {
@@ -183,7 +186,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxAccessDistribution(vx_distribution distribu
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxCommitDistribution(vx_distribution distribution, void *ptr)
+VX_API_ENTRY vx_status VX_API_CALL vxCommitDistribution(vx_distribution distribution, const void *ptr)
 {
     vx_status status = VX_FAILURE;
     if ((vxIsValidSpecificReference(&distribution->base, VX_TYPE_DISTRIBUTION) == vx_true_e) &&

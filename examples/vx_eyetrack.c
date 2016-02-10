@@ -41,7 +41,7 @@ int example_eyetracking(int argc, char *argv[])
     vx_uint32 height = 480;
     vx_bool running = vx_true_e;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_image images[] = {
             vxCreateImage(context, width, height, VX_DF_IMAGE_UYVY),
@@ -49,7 +49,7 @@ int example_eyetracking(int argc, char *argv[])
         };
 
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_node nodes[] = {
                 /*! \todo add nodes which process eye tracking */

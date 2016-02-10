@@ -32,7 +32,7 @@
 #include <vx_internal.h>
 #include <c_model.h>
 
-static vx_status VX_CALLBACK vxAbsDiffKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxAbsDiffKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 3)
@@ -59,8 +59,9 @@ static vx_status VX_CALLBACK vxAbsDiffInputValidator(vx_node node, vx_uint32 ind
             vx_df_image format = 0;
             vxQueryImage(input, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
             if (format == VX_DF_IMAGE_U8
+                || format == VX_DF_IMAGE_S16
 #if defined(EXPERIMENTAL_USE_S16)
-                || format == VX_DF_IMAGE_S16 || format == VX_DF_IMAGE_U16
+                || format == VX_DF_IMAGE_U16
 #endif
                 )
                 status = VX_SUCCESS;
@@ -126,6 +127,7 @@ static vx_status VX_CALLBACK vxAbsDiffOutputValidator(vx_node node, vx_uint32 in
                 vxQueryImage(images[1], VX_IMAGE_ATTRIBUTE_HEIGHT, &height[1], sizeof(height[1]));
                 if (width[0] == width[1] && height[0] == height[1] &&
                     (format == VX_DF_IMAGE_U8
+                     || format == VX_DF_IMAGE_S16
 #if defined(EXPERIMENTAL_USE_S16)
                      || format == VX_DF_IMAGE_U16
 #endif

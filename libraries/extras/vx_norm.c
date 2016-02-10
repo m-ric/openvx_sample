@@ -43,7 +43,7 @@ static vx_status vxNorm(vx_image input_x, vx_image input_y, vx_scalar norm_type,
     vx_rectangle_t rect;
     vx_enum norm_type_value;
 
-    vxAccessScalarValue(norm_type, &norm_type_value);
+    vxReadScalarValue(norm_type, &norm_type_value);
     vxQueryImage(output, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
     vxGetValidRegionImage(input_x, &rect);
     status = VX_SUCCESS;
@@ -82,7 +82,7 @@ static vx_status vxNorm(vx_image input_x, vx_image input_y, vx_scalar norm_type,
     return status;
 }
 
-static vx_status VX_CALLBACK vxNormKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxNormKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 4)
     {
@@ -152,7 +152,7 @@ static vx_status VX_CALLBACK vxNormInputValidator(vx_node node, vx_uint32 index)
             if (type == VX_TYPE_ENUM)
             {
                 vx_enum value;
-                vxAccessScalarValue(norm_type, &value);
+                vxReadScalarValue(norm_type, &value);
                 if (value == VX_NORM_L1 || value == VX_NORM_L2)
                     status = VX_SUCCESS;
             }

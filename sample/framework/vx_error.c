@@ -30,6 +30,7 @@ void vxReleaseErrorInt(vx_error_t **error)
 
 vx_error_t *vxAllocateError(vx_context_t *context, vx_status status)
 {
+    /* PROBLEM: vxCreateReference needs error object to be created already */
     vx_error_t *error = (vx_error_t *)vxCreateReference(context, VX_TYPE_ERROR, VX_INTERNAL, &context->base);
     if (error)
     {
@@ -55,6 +56,7 @@ vx_error_t *vxGetErrorObject(vx_context_t *context, vx_status status)
 {
     vx_error_t *error = NULL;
     vx_size i = 0ul;
+    vxSemWait(&context->base.lock);
     for (i = 0ul; i < context->num_references; i++)
     {
         if (context->reftable[i] == NULL)
@@ -70,6 +72,7 @@ vx_error_t *vxGetErrorObject(vx_context_t *context, vx_status status)
             error = NULL;
         }
     }
+    vxSemPost(&context->base.lock);
     return error;
 }
 

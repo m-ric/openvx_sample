@@ -95,7 +95,7 @@ static vx_status VX_CALLBACK vxAddSubtractInputValidator(vx_node node, vx_uint32
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum overflow_policy = 0;
-                    vxAccessScalarValue(scalar, &overflow_policy);
+                    vxReadScalarValue(scalar, &overflow_policy);
                     if ((overflow_policy == VX_CONVERT_POLICY_WRAP) ||
                         (overflow_policy == VX_CONVERT_POLICY_SATURATE))
                     {
@@ -192,7 +192,7 @@ static vx_param_description_t add_subtract_kernel_params[] = {
 };
 
 /* There's already a "vxAddKernel"; we have to use a slightly different name. */
-static vx_status VX_CALLBACK vxAdditionKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxAdditionKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 4)
     {
@@ -216,7 +216,7 @@ vx_kernel_description_t add_kernel = {
     NULL,
 };
 
-static vx_status VX_CALLBACK vxSubtractionKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxSubtractionKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 4)
     {

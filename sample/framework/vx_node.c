@@ -48,55 +48,63 @@ VX_API_ENTRY vx_node VX_API_CALL vxCreateGenericNode(vx_graph g, vx_kernel k)
     vx_node_t *node = NULL;
     vx_graph_t *graph = (vx_graph_t *)g;
     vx_kernel_t *kernel = (vx_kernel_t *)k;
-    if ((vxIsValidSpecificReference(&graph->base, VX_TYPE_GRAPH) == vx_true_e) &&
-        (vxIsValidSpecificReference(&kernel->base, VX_TYPE_KERNEL) == vx_true_e))
+
+    if (vxIsValidSpecificReference(&graph->base, VX_TYPE_GRAPH) == vx_true_e)
     {
-        vx_uint32 n = 0;
-        vxSemWait(&graph->base.lock);
-        for (n = 0; n < VX_INT_MAX_REF; n++)
+        if (vxIsValidSpecificReference(&kernel->base, VX_TYPE_KERNEL) == vx_true_e)
         {
-            if (graph->nodes[n] == NULL)
+            vx_uint32 n = 0;
+            vxSemWait(&graph->base.lock);
+            for (n = 0; n < VX_INT_MAX_REF; n++)
             {
-                node = (vx_node)vxCreateReference(graph->base.context, VX_TYPE_NODE, VX_EXTERNAL, &graph->base);
-                if (node && node->base.type == VX_TYPE_NODE)
+                if (graph->nodes[n] == NULL)
                 {
-                    /* reference the abstract kernel. */
-                    node->kernel = kernel;
-                    node->affinity = kernel->affinity;
+                    node = (vx_node)vxCreateReference(graph->base.context, VX_TYPE_NODE, VX_EXTERNAL, &graph->base);
+                    if (vxGetStatus((vx_reference)node) == VX_SUCCESS && node->base.type == VX_TYPE_NODE)
+                    {
+                        /* reference the abstract kernel. */
+                        node->kernel = kernel;
+                        node->affinity = kernel->affinity;
 
-                    /* show that there are potentially multiple nodes using this kernel. */
-                    vxIncrementReference(&kernel->base, VX_INTERNAL);
+                        /* show that there are potentially multiple nodes using this kernel. */
+                        vxIncrementReference(&kernel->base, VX_INTERNAL);
 
-                    /* copy the attributes over */
-                    memcpy(&node->attributes, &kernel->attributes, sizeof(vx_kernel_attr_t));
+                        /* copy the attributes over */
+                        memcpy(&node->attributes, &kernel->attributes, sizeof(vx_kernel_attr_t));
 
-                    /* setup our forward and back references to the node/graph */
-                    graph->nodes[n] = node;
-                    node->graph = graph;
-                    vxIncrementReference(&node->base, VX_INTERNAL); /* one for the graph */
+                        /* setup our forward and back references to the node/graph */
+                        graph->nodes[n] = node;
+                        node->graph = graph;
+                        vxIncrementReference(&node->base, VX_INTERNAL); /* one for the graph */
 
-                    /* increase the count of nodes in the graph. */
-                    graph->numNodes++;
+                        /* increase the count of nodes in the graph. */
+                        graph->numNodes++;
 
-                    vxInitPerf(&graph->nodes[n]->perf);
+                        vxInitPerf(&graph->nodes[n]->perf);
 
-                    /* force a re-verify */
-                    graph->verified = vx_false_e;
+                        /* force a re-verify */
+                        graph->verified = vx_false_e;
 
-                    VX_PRINT(VX_ZONE_NODE, "Created Node %p %s affinity:%s\n", node, node->kernel->name, node->base.context->targets[node->affinity].name);
+                        VX_PRINT(VX_ZONE_NODE, "Created Node %p %s affinity:%s\n", node, node->kernel->name, node->base.context->targets[node->affinity].name);
+                    }
+                    break; /* succeed or fail, break. */
                 }
-                break; /* succeed or fail, break. */
             }
+            vxSemPost(&graph->base.lock);
+            vxPrintReference((vx_reference )node);
         }
-        vxSemPost(&graph->base.lock);
-        vxPrintReference((vx_reference )node);
+        else
+        {
+            VX_PRINT(VX_ZONE_ERROR, "Kernel %p was invalid!\n", kernel);
+            vxAddLogEntry((vx_reference)g, VX_ERROR_INVALID_REFERENCE, "Kernel %p was invalid!\n", kernel);
+            node = (vx_node_t *)vxGetErrorObject(graph->base.context, VX_ERROR_INVALID_REFERENCE);
+        }
     }
-    else
-    {
-        VX_PRINT(VX_ZONE_ERROR, "Either graph %p or kernel %p was invalid!\n", graph, kernel);
-        vxAddLogEntry((vx_reference)g, VX_ERROR_INVALID_REFERENCE, "Either graph %p or kernel %p was invalid!\n", graph, kernel);
-        node = (vx_node_t *)vxGetErrorObject(graph->base.context, VX_ERROR_INVALID_REFERENCE);
+    else {
+        VX_PRINT(VX_ZONE_ERROR, "Graph %p was invalid!\n", graph);
+        vxAddLogEntry((vx_reference)g, VX_ERROR_INVALID_REFERENCE, "Graph %p as invalid!\n", graph);
     }
+
     return (vx_node)node;
 }
 
@@ -236,7 +244,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryNode(vx_node n, vx_enum attribute, voi
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute(vx_node n, vx_enum attribute, void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetNodeAttribute(vx_node n, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     vx_node_t *node = (vx_node_t *)n;
@@ -356,9 +364,10 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseNode(vx_node *n)
     return vxReleaseReferenceInt((vx_reference *)n, VX_TYPE_NODE, VX_EXTERNAL, NULL);
 }
 
-void vxRemoveNodeInt(vx_node *n)
+vx_status vxRemoveNodeInt(vx_node *n)
 {
     vx_node_t *node = (vx_node_t *)(n?*n:0);
+    vx_status status =  VX_ERROR_INVALID_REFERENCE;
     if (node && vxIsValidSpecificReference(&node->base, VX_TYPE_NODE))
     {
         if (node->graph)
@@ -384,20 +393,28 @@ void vxRemoveNodeInt(vx_node *n)
             /* If this node is within a graph, release internal reference to graph */
             if(removedFromGraph) {
                 vxReleaseReferenceInt((vx_reference *)&node, VX_TYPE_NODE, VX_INTERNAL, NULL);
+                status = VX_SUCCESS;
             }
         }
     }
+    return status;
 }
 
-VX_API_ENTRY void VX_API_CALL vxRemoveNode(vx_node *n)
+VX_API_ENTRY vx_status VX_API_CALL vxRemoveNode(vx_node *n)
 {
     vx_node_t *node = (vx_node_t *)(n?*n:0);
+    vx_status status =  VX_ERROR_INVALID_REFERENCE;
     if (node && vxIsValidSpecificReference(&node->base, VX_TYPE_NODE))
     {
-        vxRemoveNodeInt(n);
-        vxReleaseReferenceInt((vx_reference *)&node, VX_TYPE_NODE, VX_EXTERNAL, NULL);
-        *n = NULL;
+        status = vxRemoveNodeInt(n);
+        if(status == VX_SUCCESS) {
+            status = vxReleaseReferenceInt((vx_reference *)&node, VX_TYPE_NODE, VX_EXTERNAL, NULL);
+            if(status == VX_SUCCESS) {
+                *n = NULL;
+            }
+        }
     }
+    return status;
 }
 
 VX_API_ENTRY vx_status VX_API_CALL vxAssignNodeCallback(vx_node n, vx_nodecomplete_f callback)

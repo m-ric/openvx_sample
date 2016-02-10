@@ -45,7 +45,7 @@ static vx_param_description_t harris_kernel_params[] = {
     {VX_OUTPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_OPTIONAL},
 };
 
-static vx_status VX_CALLBACK vxHarrisCornersKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxHarrisCornersKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == dimof(harris_kernel_params))
@@ -84,12 +84,12 @@ static vx_status VX_CALLBACK vxHarrisInputValidator(vx_node node, vx_uint32 inde
         vx_parameter param = vxGetParameterByIndex(node, index);
         if (param)
         {
-            vx_scalar sens = 0;
-            status = vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &sens, sizeof(sens));
-            if ((status == VX_SUCCESS) && (sens))
+            vx_scalar strength_thresh = 0;
+            status = vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &strength_thresh, sizeof(strength_thresh));
+            if ((status == VX_SUCCESS) && (strength_thresh))
             {
                 vx_enum type = 0;
-                vxQueryScalar(sens, VX_SCALAR_ATTRIBUTE_TYPE, &type, sizeof(type));
+                vxQueryScalar(strength_thresh, VX_SCALAR_ATTRIBUTE_TYPE, &type, sizeof(type));
                 if (type == VX_TYPE_FLOAT32)
                 {
                     status = VX_SUCCESS;
@@ -98,7 +98,7 @@ static vx_status VX_CALLBACK vxHarrisInputValidator(vx_node node, vx_uint32 inde
                 {
                     status = VX_ERROR_INVALID_TYPE;
                 }
-                vxReleaseScalar(&sens);
+                vxReleaseScalar(&strength_thresh);
             }
             vxReleaseParameter(&param);
         }
@@ -108,17 +108,17 @@ static vx_status VX_CALLBACK vxHarrisInputValidator(vx_node node, vx_uint32 inde
         vx_parameter param = vxGetParameterByIndex(node, index);
         if (param)
         {
-            vx_scalar sens = 0;
-            status = vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &sens, sizeof(sens));
-            if ((status == VX_SUCCESS) && (sens))
+            vx_scalar min_dist = 0;
+            status = vxQueryParameter(param, VX_PARAMETER_ATTRIBUTE_REF, &min_dist, sizeof(min_dist));
+            if ((status == VX_SUCCESS) && (min_dist))
             {
                 vx_enum type = 0;
-                vxQueryScalar(sens, VX_SCALAR_ATTRIBUTE_TYPE, &type, sizeof(type));
+                vxQueryScalar(min_dist, VX_SCALAR_ATTRIBUTE_TYPE, &type, sizeof(type));
                 if (type == VX_TYPE_FLOAT32)
                 {
                     vx_float32 d = 0.0f;
-                    status = vxAccessScalarValue(sens, &d);
-                    if ((status == VX_SUCCESS) && (1.0 <= d) && (d <= 5.0))
+                    status = vxReadScalarValue(min_dist, &d);
+                    if ((status == VX_SUCCESS) && (0.0 <= d) && (d <= 30.0))
                     {
                         status = VX_SUCCESS;
                     }
@@ -131,7 +131,7 @@ static vx_status VX_CALLBACK vxHarrisInputValidator(vx_node node, vx_uint32 inde
                 {
                     status = VX_ERROR_INVALID_TYPE;
                 }
-                vxReleaseScalar(&sens);
+                vxReleaseScalar(&min_dist);
             }
             vxReleaseParameter(&param);
         }
@@ -150,7 +150,7 @@ static vx_status VX_CALLBACK vxHarrisInputValidator(vx_node node, vx_uint32 inde
                 if (type == VX_TYPE_FLOAT32)
                 {
                     vx_float32 k = 0.0f;
-                    vxAccessScalarValue(sens, &k);
+                    vxReadScalarValue(sens, &k);
                     VX_PRINT(VX_ZONE_INFO, "k = %lf\n", k);
                     if ((0.040000f <= k) && (k < 0.150001f))
                     {
@@ -184,7 +184,7 @@ static vx_status VX_CALLBACK vxHarrisInputValidator(vx_node node, vx_uint32 inde
                 if (type == VX_TYPE_INT32)
                 {
                     vx_int32 size = 0;
-                    vxAccessScalarValue(scalar, &size);
+                    vxReadScalarValue(scalar, &size);
                     VX_PRINT(VX_ZONE_INFO, "size = %u\n", size);
                     if ((size == 3) || (size == 5) || (size == 7))
                     {
@@ -219,13 +219,13 @@ static vx_status VX_CALLBACK vxHarrisOutputValidator(vx_node node, vx_uint32 ind
     }
     else if (index == 7)
     {
-        ptr->dim.scalar.type = VX_TYPE_UINT32;
+        ptr->dim.scalar.type = VX_TYPE_SIZE;
         status = VX_SUCCESS;
     }
     return status;
 }
 
-static vx_status VX_CALLBACK vxHarrisInitializer(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxHarrisInitializer(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == dimof(harris_kernel_params))
@@ -242,7 +242,7 @@ static vx_status VX_CALLBACK vxHarrisInitializer(vx_node node, vx_reference para
         vx_graph g = vxCreateGraph(c);
         vxLoadKernels(c, "openvx-extras");
         vxLoadKernels(c, "openvx-debug");
-        if (g)
+        if (vxGetStatus((vx_reference)g) == VX_SUCCESS)
         {
             vx_uint32 i = 0;
             vx_int32 ds = 4;
@@ -256,15 +256,20 @@ static vx_status VX_CALLBACK vxHarrisInitializer(vx_node node, vx_reference para
             };
             vx_node nodes[] = {
                     vxSobelMxNNode(g, src, win, virts[0], virts[1]),
-                    vxHarrisScoreNode(g, virts[0], virts[1], sen, blk, virts[2]),
-                    vxEuclideanNonMaxNode(g, virts[2], str, min, virts[3]),
+                    vxHarrisScoreNode(g, virts[0], virts[1], sen, win, blk, virts[2]),
+                    vxEuclideanNonMaxHarrisNode(g, virts[2], str, min, virts[3]),
                     vxImageListerNode(g, virts[3], arr, num_corners),
+/*
 #if defined(OPENVX_DEBUGGING)
                     vxConvertDepthNode(g,virts[3],virts[4],VX_CONVERT_POLICY_WRAP,shift),
                     vxFWriteImageNode(g,virts[4],"oharris_strength_power_up4.pgm"),
 #endif
+*/
 
             };
+
+            g->parentGraph = node->graph;
+
             status = VX_SUCCESS;
             status |= vxAddParameterToGraphByIndex(g, nodes[0], 0); // src
             status |= vxAddParameterToGraphByIndex(g, nodes[2], 1); // str
@@ -298,7 +303,7 @@ static vx_status VX_CALLBACK vxHarrisInitializer(vx_node node, vx_reference para
     return status;
 }
 
-static vx_status VX_CALLBACK vxHarrisDeinitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxHarrisDeinitializer(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == dimof(harris_kernel_params))

@@ -33,7 +33,7 @@
 #include <vx_internal.h>
 #include <c_model.h>
 
-static vx_status VX_CALLBACK vxErode3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxErode3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 2)
@@ -51,7 +51,7 @@ static vx_status VX_CALLBACK vxErode3x3Kernel(vx_node node, vx_reference *parame
 }
 
 
-static vx_status VX_CALLBACK vxDilate3x3Kernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxDilate3x3Kernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 2)
@@ -127,7 +127,7 @@ static vx_param_description_t morphology_kernel_params[] = {
 
 vx_kernel_description_t erode3x3_kernel = {
     VX_KERNEL_ERODE_3x3,
-    "org.khronos.openvx.erode3x3",
+    "org.khronos.openvx.erode_3x3",
     vxErode3x3Kernel,
     morphology_kernel_params, dimof(morphology_kernel_params),
     vxMorphologyInputValidator,
@@ -138,7 +138,7 @@ vx_kernel_description_t erode3x3_kernel = {
 
 vx_kernel_description_t dilate3x3_kernel = {
     VX_KERNEL_DILATE_3x3,
-    "org.khronos.openvx.dilate3x3",
+    "org.khronos.openvx.dilate_3x3",
     vxDilate3x3Kernel,
     morphology_kernel_params, dimof(morphology_kernel_params),
     vxMorphologyInputValidator,

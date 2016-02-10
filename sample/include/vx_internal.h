@@ -497,6 +497,8 @@ typedef struct _vx_reference {
     vx_sem_t lock;
     /*! \brief A reserved field which can be used to store anonymous data */
     void *reserved;
+    /*! \brief A field which can be used to store a temporary, per-graph index. */
+    vx_uint32 index;
     /*! \brief This indicates if the object was extracted from another object */
     vx_bool extracted;
     /*! \brief This indicates if the object is virtual or not */
@@ -732,7 +734,7 @@ typedef vx_status (*vx_target_verify_f)(vx_target target, vx_node node);
  * \ingroup group_int_target
  */
 typedef vx_kernel (*vx_target_addkernel_f)(vx_target target,
-                                           vx_char name[VX_MAX_KERNEL_NAME],
+                                           const vx_char name[VX_MAX_KERNEL_NAME],
                                            vx_enum enumeration,
                                            vx_kernel_f func_ptr,
                                            vx_uint32 num_parameters,
@@ -746,7 +748,7 @@ typedef vx_kernel (*vx_target_addkernel_f)(vx_target target,
  * \ingroup group_int_target
  */
 typedef vx_kernel (*vx_target_addtilingkernel_f)(vx_target target,
-                                                  vx_char name[VX_MAX_KERNEL_NAME],
+                                                  const vx_char name[VX_MAX_KERNEL_NAME],
                                                   vx_enum enumeration,
                                                   vx_tiling_kernel_f flexible_func_ptr,
                                                   vx_tiling_kernel_f fast_func_ptr,
@@ -854,6 +856,8 @@ typedef struct _vx_external_t {
     vx_bool allocated;
     /*! \brief Indicates if this entry is being used */
     vx_bool used;
+    /*! \brief Extra data attached to the accessor */
+    void *extra_data;
 } vx_external_t;
 
 /*! \brief The top level context data for the entire OpenVX instance
@@ -999,6 +1003,8 @@ typedef struct _vx_graph {
     vx_uint32      numParams;
     /*! \brief A switch to turn off SMP mode */
     vx_bool        should_serialize;
+    /*! \brief [hidden] If non-NULL, the parent graph, for scope handling. */
+    vx_graph       parentGraph;
 } vx_graph_t;
 
 /*! \brief The dimensions enumeration, also stride enumerations.
@@ -1181,9 +1187,9 @@ typedef struct _vx_distribution {
     /*! \brief The number of elements in the active Y dimension of the distribution. */
     vx_uint32 window_y;
     /*! \brief The number of inactive elements from zero in the X dimension */
-    vx_uint32 offset_x;
+    vx_int32 offset_x;
     /*! \brief The number of inactive elements from zero in the Y dimension */
-    vx_uint32 offset_y;
+    vx_int32 offset_y;
 } vx_distribution_t;
 
 /*! \brief The internal threshold structure.

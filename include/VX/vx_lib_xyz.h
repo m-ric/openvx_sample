@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -28,7 +28,6 @@
 /*!
  * \file
  * \brief An example of how to wrap a User Extension Kernel.
- * \author Erik Rainey <erik.rainey@gmail.com>
  *
  * \defgroup group_xyz_ext The Example User Kernel Extension
  *
@@ -39,7 +38,6 @@
 /*!
  * \file vx_ext_xyz.h
  * \brief The example header for how to write a user mode extension to OpenVX.
- * \author Erik Rainey <erik.rainey@gmail.com>
  */
 
 /*! \brief The XYZ Data area in bytes

@@ -45,7 +45,7 @@ vx_graph vxCornersGraphFactory(vx_context context)
     vx_int32 block_size = 3;
     vx_enum channel = VX_CHANNEL_Y;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_image virts[] = {
             vxCreateVirtualImage(graph, 0, 0, VX_DF_IMAGE_VIRT),

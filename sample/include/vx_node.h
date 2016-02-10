@@ -63,8 +63,11 @@ void vxDestructNode(vx_reference ref);
 
 /*! \brief Used to remove a node from a graph.
  * \ingroup group_int_node
+ * \return A <tt>\ref vx_status_e</tt> enumeration.
+ * \retval VX_SUCCESS No errors.
+ * \retval VX_ERROR_INVALID_REFERENCE If *n is not a <tt>\ref vx_node</tt>.
  */
-void vxRemoveNodeInt(vx_node *n);
+vx_status vxRemoveNodeInt(vx_node *n);
 
 /*! \brief Used to set the graph as a child of the node within another graph.
  * \param [in] n The node.

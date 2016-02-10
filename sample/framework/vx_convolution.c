@@ -42,12 +42,13 @@ static VX_INLINE int isodd(size_t a)
 VX_API_ENTRY vx_convolution VX_API_CALL vxCreateConvolution(vx_context context, vx_size columns, vx_size rows)
 {
     vx_convolution convolution = NULL;
+
     if (vxIsValidContext(context) == vx_true_e)
     {
         if (isodd(columns) && columns >= 3 && isodd(rows) && rows >= 3)
         {
             convolution = (vx_convolution)vxCreateReference(context, VX_TYPE_CONVOLUTION, VX_EXTERNAL, &context->base);
-            if (convolution && convolution->base.base.type == VX_TYPE_CONVOLUTION)
+            if (vxGetStatus((vx_reference)convolution) == VX_SUCCESS && convolution->base.base.type == VX_TYPE_CONVOLUTION)
             {
                 convolution->base.data_type = VX_TYPE_INT16;
                 convolution->base.columns = columns;
@@ -135,7 +136,7 @@ static vx_bool vxIsPowerOfTwo(vx_uint32 a)
         return vx_false_e;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute(vx_convolution convolution, vx_enum attribute, void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute(vx_convolution convolution, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     if (vxIsValidSpecificReference(&convolution->base.base, VX_TYPE_CONVOLUTION) == vx_false_e)
@@ -174,7 +175,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetConvolutionAttribute(vx_convolution conv
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxAccessConvolutionCoefficients(vx_convolution convolution, vx_int16 *array)
+VX_API_ENTRY vx_status VX_API_CALL vxReadConvolutionCoefficients(vx_convolution convolution, vx_int16 *array)
 {
     vx_status status = VX_ERROR_INVALID_REFERENCE;
     if ((vxIsValidSpecificReference(&convolution->base.base, VX_TYPE_CONVOLUTION) == vx_true_e) &&
@@ -189,13 +190,12 @@ VX_API_ENTRY vx_status VX_API_CALL vxAccessConvolutionCoefficients(vx_convolutio
         }
         vxSemPost(&convolution->base.base.lock);
         vxReadFromReference(&convolution->base.base);
-        vxIncrementReference(&convolution->base.base, VX_EXTERNAL);
         status = VX_SUCCESS;
     }
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxCommitConvolutionCoefficients(vx_convolution convolution, vx_int16 *array)
+VX_API_ENTRY vx_status VX_API_CALL vxWriteConvolutionCoefficients(vx_convolution convolution, const vx_int16 *array)
 {
     vx_status status = VX_ERROR_INVALID_REFERENCE;
     if ((vxIsValidSpecificReference(&convolution->base.base, VX_TYPE_CONVOLUTION) == vx_true_e) &&
@@ -211,7 +211,6 @@ VX_API_ENTRY vx_status VX_API_CALL vxCommitConvolutionCoefficients(vx_convolutio
         }
         vxSemPost(&convolution->base.base.lock);
         vxWroteToReference(&convolution->base.base);
-        vxDecrementReference(&convolution->base.base, VX_EXTERNAL);
         status = VX_SUCCESS;
     }
     return status;

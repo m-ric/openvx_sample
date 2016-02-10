@@ -49,7 +49,7 @@ vx_status vxConvolve(vx_image src, vx_convolution conv, vx_image dst, vx_border_
     status |= vxQueryConvolution(conv, VX_CONVOLUTION_ATTRIBUTE_SCALE, &scale, sizeof(scale));
     conv_radius_x = (vx_int32)conv_width / 2;
     conv_radius_y = (vx_int32)conv_height / 2;
-    status |= vxAccessConvolutionCoefficients(conv, conv_mat);
+    status |= vxReadConvolutionCoefficients(conv, conv_mat);
     status |= vxGetValidRegionImage(src, &rect);
     status |= vxAccessImagePatch(src, &rect, 0, &src_addr, &src_base, VX_READ_ONLY);
     status |= vxAccessImagePatch(dst, &rect, 0, &dst_addr, &dst_base, VX_WRITE_ONLY);
@@ -114,7 +114,6 @@ vx_status vxConvolve(vx_image src, vx_convolution conv, vx_image dst, vx_border_
         }
     }
 
-    status |= vxCommitConvolutionCoefficients(conv, NULL);
     status |= vxCommitImagePatch(src, NULL, 0, &src_addr, src_base);
     status |= vxCommitImagePatch(dst, &rect, 0, &dst_addr, dst_base);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -26,7 +26,6 @@
 
 /*! \file
  * \brief The OpenVX to OpenCL Inter-op Extension Header.
- * \author Erik Rainey <erik.rainey@gmail.com>
  *
  * \defgroup group_cl_api API
  * \brief The API used by Clients to add OpenCL Kernels as <tt>vx_kernel</tt>.

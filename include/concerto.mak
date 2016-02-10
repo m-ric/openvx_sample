@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2015 The Khronos Group Inc.
+# Copyright (c) 2015 The Khronos Group Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and/or associated documentation files (the
@@ -19,21 +19,30 @@
 # TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 # MATERIALS OR THE USE OR OTHER DEALINGS IN THE MATERIALS.
 
-CONCERTO_ROOT ?= concerto
-DIRECTORIES := include examples helper debug libraries kernels sample tools
-# The OpenVX CVPR tutorial is written for Linux only and requires
-# OpenCV to be installed
-ifdef ENABLE_CVPR_TUTORIAL
-DIRECTORIES += tutorial_CVPR/step1_start tutorial_CVPR/step1
-DIRECTORIES += tutorial_CVPR/step2_start tutorial_CVPR/step2
-DIRECTORIES += tutorial_CVPR/step3_start tutorial_CVPR/step3
-endif
-OPENVX_SRC := sample
-BUILD_TARGET ?= $(CONCERTO_ROOT)/target.mak
-# By not setting target combos it will automatically generate them.
-#TARGET_COMBOS:=PC:LINUX:x86_64:0:debug:GCC
-#TARGET_COMBOS+=PC:LINUX:x86_64:0:release:GCC
-#TARGET_COMBOS+=PC:Windows_NT:X64:0:release:CL
-#TARGET_COMBOS+=PC:Windows_NT:X64:0:debug:CL
-#TARGET_COMBOS+=PC:LINUX:ARM:0:debug:RVCT
-include $(CONCERTO_ROOT)/rules.mak
+# Make a bzip2 tarball containing just the standard headers
+# (no extensions).
+
+OPENVX_STD_HEADER_BASENAMES = \
+ vx.h vxu.h vx_vendors.h vx_types.h vx_kernels.h vx_api.h vx_nodes.h
+
+OPENVX_STD_HEADERS = $(patsubst %, VX/%, $(OPENVX_STD_HEADER_BASENAMES))
+
+# This is just the default destination, expected to be overridden.
+OPENVX_HEADERS_DESTDIR = $(HOST_ROOT)/out
+
+OPENVX_STD_HEADERS_PACKAGE_NAME = openvx-standard-headers-$(VERSION).tar.bz2
+
+# Only do this for the same host environments where the concerto
+# "tar" package type is available.
+ifneq ($(filter $(HOST_OS),LINUX CYGWIN DARWIN),)
+
+.PHONY: openvx-standard-headers-package
+openvx-standard-headers-package: \
+ $(OPENVX_HEADERS_DESTDIR)/$(OPENVX_STD_HEADERS_PACKAGE_NAME)
+
+$(OPENVX_HEADERS_DESTDIR)/$(OPENVX_STD_HEADERS_PACKAGE_NAME): \
+ $(patsubst %, $(HOST_ROOT)/include/%, $(OPENVX_STD_HEADERS))
+	@$(MKDIR) $(OPENVX_HEADERS_DESTDIR)
+	@tar -cjf $@ -C $(HOST_ROOT)/include $(OPENVX_STD_HEADERS)
+
+endif # Host environments.

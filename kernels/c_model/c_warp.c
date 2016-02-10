@@ -94,8 +94,8 @@ static vx_status vxWarpGeneric(vx_image src_image, vx_matrix matrix, vx_scalar s
     status |= vxAccessImagePatch(src_image, &src_rect, 0, &src_addr, &src_base, VX_READ_ONLY);
     status |= vxAccessImagePatch(dst_image, &dst_rect, 0, &dst_addr, &dst_base, VX_WRITE_ONLY);
 
-    status |= vxAccessMatrix(matrix, m);
-    status |= vxAccessScalarValue(stype, &type);
+    status |= vxReadMatrix(matrix, m);
+    status |= vxReadScalarValue(stype, &type);
 
     if (status == VX_SUCCESS)
     {
@@ -138,7 +138,7 @@ static vx_status vxWarpGeneric(vx_image src_image, vx_matrix matrix, vx_scalar s
         /*! \todo compute maximum area rectangle */
     }
 
-    status |= vxCommitMatrix(matrix, m);
+    status |= vxWriteMatrix(matrix, m);
     status |= vxCommitImagePatch(src_image, NULL, 0, &src_addr, src_base);
     status |= vxCommitImagePatch(dst_image, &dst_rect, 0, &dst_addr, dst_base);
 

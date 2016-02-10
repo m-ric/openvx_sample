@@ -44,8 +44,8 @@ vx_bool vxValidateArray(vx_array array, vx_enum item_type, vx_size capacity);
 
 vx_bool vxAllocateArray(vx_array array);
 
-vx_status vxAccessArrayRangeInt(vx_array array, vx_size start, vx_size end, void **ptr, vx_enum usage);
-vx_status vxCommitArrayRangeInt(vx_array array, vx_size start, vx_size end, void *ptr);
+vx_status vxAccessArrayRangeInt(vx_array array, vx_size start, vx_size end, vx_size *pStride, void **ptr, vx_enum usage);
+vx_status vxCommitArrayRangeInt(vx_array array, vx_size start, vx_size end, const void *ptr);
 
 #ifdef __cplusplus
 }

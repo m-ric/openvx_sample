@@ -556,6 +556,7 @@ void vxStopCapture(vx_perf_t *perf)
     perf->num++;
     perf->avg = perf->sum / perf->num;
     perf->min = (perf->min < perf->tmp ? perf->min : perf->tmp);
+    perf->max = (perf->max > perf->tmp ? perf->max : perf->tmp);
 }
 
 void vxPrintPerf(vx_perf_t *perf) {

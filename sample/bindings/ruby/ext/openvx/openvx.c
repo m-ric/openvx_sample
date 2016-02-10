@@ -656,7 +656,7 @@ static VALUE Node_init(int argc, VALUE *args, VALUE self)
         Check_Type(array, T_ARRAY);
 
         node = vxCreateGenericNode(graph, kernel);
-        if (node == 0)
+        if (vxGetStatus((vx_reference)node) != VX_SUCCESS)
             rb_raise(rb_eTypeError, "node could not be created!");
 
         REXT_PRINT("Array of parameters has len = %ld\n", RARRAY_LEN(array));

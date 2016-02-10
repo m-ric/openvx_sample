@@ -30,12 +30,18 @@ void vxReleaseMetaFormat(vx_meta_format *pmeta)
 
 vx_meta_format vxCreateMetaFormat(vx_context context)
 {
-    vx_meta_format meta = (vx_meta_format)vxCreateReference(context, VX_TYPE_META_FORMAT, VX_EXTERNAL, &context->base);
-    if (meta)
+    vx_meta_format meta = NULL;
+
+    if (vxIsValidContext(context) == vx_true_e)
     {
-        meta->size = sizeof(vx_meta_format_t);
-        meta->type = VX_TYPE_INVALID;
+        meta = (vx_meta_format)vxCreateReference(context, VX_TYPE_META_FORMAT, VX_EXTERNAL, &context->base);
+        if (vxGetStatus((vx_reference)meta) == VX_SUCCESS)
+        {
+            meta->size = sizeof(vx_meta_format_t);
+            meta->type = VX_TYPE_INVALID;
+        }
     }
+
     return meta;
 }
 
@@ -43,7 +49,7 @@ vx_meta_format vxCreateMetaFormat(vx_context context)
 // PUBLIC
 /******************************************************************************/
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetMetaFormatAttribute(vx_meta_format meta, vx_enum attribute, void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetMetaFormatAttribute(vx_meta_format meta, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     if (vxIsValidSpecificReference(&meta->base, VX_TYPE_META_FORMAT) == vx_false_e)

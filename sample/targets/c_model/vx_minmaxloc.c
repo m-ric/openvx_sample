@@ -33,7 +33,7 @@
 #include <vx_internal.h>
 #include <c_model.h>
 
-static vx_status VX_CALLBACK vxMinMaxLocKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxMinMaxLocKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 7)
     {
@@ -158,7 +158,7 @@ static vx_param_description_t minmaxloc_kernel_params[] = {
 
 vx_kernel_description_t minmaxloc_kernel = {
     VX_KERNEL_MINMAXLOC,
-    "org.khronos.openvx.min_max_loc",
+    "org.khronos.openvx.minmaxloc",
     vxMinMaxLocKernel,
     minmaxloc_kernel_params, dimof(minmaxloc_kernel_params),
     vxMinMaxLocInputValidator,

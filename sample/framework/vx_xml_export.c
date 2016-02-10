@@ -892,8 +892,8 @@ VX_API_ENTRY vx_status VX_API_CALL vxExportToXML(vx_context context, vx_char xml
         status = VX_SUCCESS;
         fprintf(fp, "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
                     "<openvx xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
-                    "        xmlns=\"http://www.khronos.org/openvx\"\n"
-                    "        xsi:schemaLocation=\"http://www.khronos.org/openvx OpenVX.xsd\"\n"
+                    "        xmlns=\"https://www.khronos.org/registry/vx/schema\"\n"
+                    "        xsi:schemaLocation=\"https://www.khronos.org/registry/vx/schema openvx-1-0.xsd\"\n"
                     "        references=\"%u\">\n", numrefs);
 
         for (r = 0u; r < context->num_modules; r++)

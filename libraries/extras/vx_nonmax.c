@@ -34,7 +34,7 @@
 #include <extras_k.h>
 
 
-static vx_status VX_CALLBACK vxEuclideanNonMaxSuppressionKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxEuclideanNonMaxSuppressionHarrisKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     if (num == 4)
     {
@@ -42,12 +42,12 @@ static vx_status VX_CALLBACK vxEuclideanNonMaxSuppressionKernel(vx_node node, vx
         vx_scalar thr = (vx_scalar)parameters[1];
         vx_scalar rad = (vx_scalar)parameters[2];
         vx_image  dst = (vx_image) parameters[3];
-        return vxEuclideanNonMaxSuppression(src, thr, rad, dst);
+        return vxEuclideanNonMaxSuppressionHarris(src, thr, rad, dst);
     }
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxNonMaxSuppressionKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxNonMaxSuppressionKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     if (num == 3)
     {
@@ -61,7 +61,7 @@ static vx_status VX_CALLBACK vxNonMaxSuppressionKernel(vx_node node, vx_referenc
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxEuclideanNonMaxInputValidator(vx_node node, vx_uint32 index)
+static vx_status VX_CALLBACK vxEuclideanNonMaxHarrisInputValidator(vx_node node, vx_uint32 index)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (index == 0) /* image */
@@ -75,7 +75,7 @@ static vx_status VX_CALLBACK vxEuclideanNonMaxInputValidator(vx_node node, vx_ui
             {
                 vx_df_image format = VX_DF_IMAGE_VIRT;
                 vxQueryImage(img, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
-                if ((format == VX_DF_IMAGE_S32) || (format == VX_DF_IMAGE_F32))
+                if (format == VX_DF_IMAGE_F32)
                 {
                     status = VX_SUCCESS;
                 }
@@ -122,8 +122,8 @@ static vx_status VX_CALLBACK vxEuclideanNonMaxInputValidator(vx_node node, vx_ui
                 if (stype == VX_TYPE_FLOAT32)
                 {
                     vx_float32 radius = 0;
-                    vxAccessScalarValue(scalar, &radius);
-                    if ((1.0 < radius) && (radius <= 5.0))
+                    vxReadScalarValue(scalar, &radius);
+                    if ((0.0 <= radius) && (radius <= 30.0))
                     {
                         status = VX_SUCCESS;
                     }
@@ -231,7 +231,7 @@ static vx_status VX_CALLBACK vxNonMaxSuppressionOutputValidator(vx_node node, vx
     return status;
 }
 
-static vx_status VX_CALLBACK vxEuclideanNonMaxOutputValidator(vx_node node, vx_uint32 index, vx_meta_format meta)
+static vx_status VX_CALLBACK vxEuclideanNonMaxHarrisOutputValidator(vx_node node, vx_uint32 index, vx_meta_format meta)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (index == 3)
@@ -270,7 +270,7 @@ static vx_param_description_t nonmaxsuppression_params[] = {
     {VX_OUTPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},
 };
 
-static vx_param_description_t euclidean_non_max_suppression_params[] = {
+static vx_param_description_t euclidean_non_max_suppression_harris_params[] = {
     {VX_INPUT, VX_TYPE_IMAGE, VX_PARAMETER_STATE_REQUIRED},
     {VX_INPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_REQUIRED}, /* strength_thresh */
     {VX_INPUT, VX_TYPE_SCALAR, VX_PARAMETER_STATE_REQUIRED}, /* min_distance */
@@ -288,11 +288,13 @@ vx_kernel_description_t nonmax_kernel = {
     NULL,
 };
 
-vx_kernel_description_t euclidian_nonmax_kernel = {
-    VX_KERNEL_EXTRAS_EUCLIDEAN_NONMAXSUPPRESSION,
-    "org.khronos.extra.euclidean_nonmaxsuppression",
-    vxEuclideanNonMaxSuppressionKernel,
-    euclidean_non_max_suppression_params, dimof(euclidean_non_max_suppression_params),
-    vxEuclideanNonMaxInputValidator,
-    vxEuclideanNonMaxOutputValidator,
+vx_kernel_description_t euclidian_nonmax_harris_kernel = {
+    VX_KERNEL_EXTRAS_EUCLIDEAN_NONMAXSUPPRESSION_HARRIS,
+    "org.khronos.extra.euclidean_nonmaxsuppression_harris",
+    vxEuclideanNonMaxSuppressionHarrisKernel,
+    euclidean_non_max_suppression_harris_params, dimof(euclidean_non_max_suppression_harris_params),
+    vxEuclideanNonMaxHarrisInputValidator,
+    vxEuclideanNonMaxHarrisOutputValidator,
+    NULL,
+    NULL,
 };

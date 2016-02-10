@@ -32,10 +32,10 @@ vx_status example_conv(vx_context context)
         { 10, 0,-10},
         {  3, 0, -3},
     };
-    vx_uint32 scale = 9;
+    vx_uint32 scale = 8;
     vx_convolution scharr_x = vxCreateConvolution(context, 3, 3);
-    vxAccessConvolutionCoefficients(scharr_x, NULL);
-    vxCommitConvolutionCoefficients(scharr_x, (vx_int16*)gx);
+    vxReadConvolutionCoefficients(scharr_x, NULL);
+    vxWriteConvolutionCoefficients(scharr_x, (vx_int16*)gx);
     vxSetConvolutionAttribute(scharr_x, VX_CONVOLUTION_ATTRIBUTE_SCALE, &scale, sizeof(scale));
     //! [assign]
     vxReleaseConvolution(&scharr_x);

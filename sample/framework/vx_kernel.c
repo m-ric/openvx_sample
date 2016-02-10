@@ -57,7 +57,7 @@ vx_kernel_t *vxAllocateKernel(vx_context context,
                               vx_uint32 numParams)
 {
     vx_kernel kernel = (vx_kernel)vxCreateReference(context, VX_TYPE_KERNEL, VX_INTERNAL, &context->base);
-    if (kernel && kernel->base.type == VX_TYPE_KERNEL)
+    if (vxGetStatus((vx_reference)kernel) == VX_SUCCESS && kernel->base.type == VX_TYPE_KERNEL)
     {
         /* setup the kernel meta-data */
         strncpy(kernel->name, name, VX_MAX_KERNEL_NAME);
@@ -153,7 +153,7 @@ vx_status vxDeinitializeKernel(vx_kernel *kernel)
     return status;
 }
 
-static vx_size strnindex(vx_char *str, vx_char c, vx_size limit)
+static vx_size strnindex(const vx_char *str, vx_char c, vx_size limit)
 {
     vx_size index = 0;
     while (index < limit && *str != c)
@@ -173,7 +173,7 @@ static vx_size strnindex(vx_char *str, vx_char c, vx_size limit)
 /* PUBLIC FUNCTIONS */
 /******************************************************************************/
 
-VX_API_ENTRY vx_status VX_API_CALL vxLoadKernels(vx_context context, vx_char *name)
+VX_API_ENTRY vx_status VX_API_CALL vxLoadKernels(vx_context context, const vx_char *name)
 {
     vx_status status = VX_FAILURE;
     vx_char module[VX_INT_MAX_PATH];
@@ -252,7 +252,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxLoadKernels(vx_context context, vx_char *na
     return status;
 }
 
-static vx_size strncount(vx_char string[], vx_size size, vx_char c)
+static vx_size strncount(const vx_char string[], vx_size size, vx_char c)
 {
     vx_size i = 0ul, count = 0ul;
     while (string[i] != '\0' && i < size)
@@ -261,7 +261,7 @@ static vx_size strncount(vx_char string[], vx_size size, vx_char c)
     return count;
 }
 
-VX_API_ENTRY vx_kernel VX_API_CALL vxGetKernelByName(vx_context context, vx_char string[VX_MAX_KERNEL_NAME])
+VX_API_ENTRY vx_kernel VX_API_CALL vxGetKernelByName(vx_context context, const vx_char string[VX_MAX_KERNEL_NAME])
 {
     vx_kernel_t *kern = NULL;
     if (vxIsValidContext(context) == vx_true_e)
@@ -422,41 +422,32 @@ VX_API_ENTRY vx_kernel VX_API_CALL vxGetKernelByEnum(vx_context context, vx_enum
     vx_kernel kernel = NULL;
     if (vxIsValidContext(context) == vx_true_e)
     {
-        if (kernelenum < VX_KERNEL_INVALID)
+        vx_uint32 k = 0u, t = 0u;
+        VX_PRINT(VX_ZONE_KERNEL,"Scanning for kernel enum %d out of %d kernels\n", kernelenum, context->num_kernels);
+        for (t = 0; t < context->num_targets; t++)
         {
-            vxAddLogEntry(&context->base, VX_ERROR_INVALID_PARAMETERS, "Invalid kernel enumeration (%d)\n", kernelenum);
-            VX_PRINT(VX_ZONE_ERROR, "Invalid kernel enumeration (%x)\n", kernelenum);
-        }
-        else if (kernelenum >= VX_KERNEL_INVALID)
-        {
-            vx_uint32 k = 0u, t = 0u;
-            VX_PRINT(VX_ZONE_KERNEL,"Scanning for kernel enum %d out of %d kernels\n", kernelenum, context->num_kernels);
-            for (t = 0; t < context->num_targets; t++)
+            vx_target_t *target = &context->targets[context->priority_targets[t]];
+            if (target == NULL || target->enabled == vx_false_e) {
+                VX_PRINT(VX_ZONE_KERNEL, "Target[%u] is not valid!\n", t);
+                continue;
+            }
+            VX_PRINT(VX_ZONE_KERNEL, "Checking Target[%u]=%s for %u kernels\n", context->priority_targets[t], target->name, target->num_kernels);
+            for (k = 0; k < target->num_kernels; k++)
             {
-                vx_target_t *target = &context->targets[context->priority_targets[t]];
-                if (target == NULL || target->enabled == vx_false_e) {
-                    VX_PRINT(VX_ZONE_KERNEL, "Target[%u] is not valid!\n", t);
-                    continue;
-                }
-                VX_PRINT(VX_ZONE_KERNEL, "Checking Target[%u]=%s for %u kernels\n", context->priority_targets[t], target->name, target->num_kernels);
-                for (k = 0; k < target->num_kernels; k++)
+                if (target->kernels[k].enumeration == kernelenum)
                 {
-                    if (target->kernels[k].enumeration == kernelenum)
-                    {
-                        kernel = &target->kernels[k];
-                        kernel->affinity = context->priority_targets[t];
-                        vxIncrementReference(&kernel->base, VX_EXTERNAL);
-                        VX_PRINT(VX_ZONE_KERNEL,"Found Kernel[%u] enum:%d name:%s in target[%u]=%s\n", k, kernelenum, kernel->name, context->priority_targets[t], target->name);
-                        break;
-                    }
+                    kernel = &target->kernels[k];
+                    kernel->affinity = context->priority_targets[t];
+                    vxIncrementReference(&kernel->base, VX_EXTERNAL);
+                    VX_PRINT(VX_ZONE_KERNEL,"Found Kernel[%u] enum:%d name:%s in target[%u]=%s\n", k, kernelenum, kernel->name, context->priority_targets[t], target->name);
+                    break;
                 }
             }
-            if (kernel == NULL) {
-                VX_PRINT(VX_ZONE_KERNEL, "Kernel enum %x not found.\n", kernelenum);
-            }
-        } else {
-            VX_PRINT(VX_ZONE_ERROR, "Invalid enumeration %x\n", kernelenum);
         }
+        if (kernel == NULL) {
+            VX_PRINT(VX_ZONE_KERNEL, "Kernel enum %x not found.\n", kernelenum);
+        }
+
     }
     else
     {
@@ -483,7 +474,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxReleaseKernel(vx_kernel *kernel)
 }
 
 VX_API_ENTRY vx_kernel VX_API_CALL vxAddKernel(vx_context c,
-                             vx_char name[VX_MAX_KERNEL_NAME],
+                             const vx_char name[VX_MAX_KERNEL_NAME],
                              vx_enum enumeration,
                              vx_kernel_f func_ptr,
                              vx_uint32 numParams,
@@ -544,6 +535,7 @@ VX_API_ENTRY vx_kernel VX_API_CALL vxAddKernel(vx_context c,
                                          input, output,
                                          initialize, deinitialize);
         VX_PRINT(VX_ZONE_KERNEL,"Added Kernel %s to Target %s ("VX_FMT_REF")\n", name, target->name, kernel);
+        vxIncrementReference(&kernel->base, VX_EXTERNAL);
     }
     else
     {
@@ -852,12 +844,13 @@ VX_API_ENTRY vx_status VX_API_CALL vxRemoveKernel(vx_kernel kernel)
         kern->enabled = vx_false_e;
         kern->enumeration = VX_KERNEL_INVALID;
         kern->base.context->num_kernels--;
+        vxDecrementReference(&kernel->base, VX_EXTERNAL);
         status = vxReleaseReferenceInt((vx_reference*)&kernel, VX_TYPE_KERNEL, VX_INTERNAL, NULL);
     }
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetKernelAttribute(vx_kernel k, vx_enum attribute, void * ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetKernelAttribute(vx_kernel k, vx_enum attribute, const void * ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     vx_kernel_t *kernel = (vx_kernel_t *)k;

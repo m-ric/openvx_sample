@@ -152,9 +152,9 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryDelay(vx_delay delay, vx_enum attribut
                 else
                     status = VX_ERROR_INVALID_PARAMETERS;
                 break;
-            case VX_DELAY_ATTRIBUTE_COUNT:
-                if (VX_CHECK_PARAM(ptr, size, vx_uint32, 0x3))
-                    *(vx_uint32 *)ptr = (vx_uint32)delay->count;
+            case VX_DELAY_ATTRIBUTE_SLOTS:
+                if (VX_CHECK_PARAM(ptr, size, vx_size, 0x3))
+                    *(vx_size *)ptr = (vx_size)delay->count;
                 else
                     status = VX_ERROR_INVALID_PARAMETERS;
                 break;
@@ -240,7 +240,7 @@ VX_API_ENTRY vx_delay VX_API_CALL vxCreateDelay(vx_context context,
     }
 
     delay = (vx_delay)vxCreateReference(context, VX_TYPE_DELAY, VX_EXTERNAL, &context->base);
-    if (delay && delay->base.type == VX_TYPE_DELAY)
+    if (vxGetStatus((vx_reference)delay) == VX_SUCCESS && delay->base.type == VX_TYPE_DELAY)
     {
         vx_size i = 0;
         delay->set = (vx_delay_param_t *)calloc(count, sizeof(vx_delay_param_t));
@@ -327,6 +327,7 @@ VX_API_ENTRY vx_delay VX_API_CALL vxCreateDelay(vx_context context,
             ((vx_reference )delay->refs[i])->scope = (vx_reference )delay;
         }
     }
+
     return (vx_delay)delay;
 }
 

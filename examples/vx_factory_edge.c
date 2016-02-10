@@ -48,7 +48,7 @@ vx_graph vxEdgeGraphFactory(vx_context c)
         };
 
         g = vxCreateGraph(c);
-        if (g)
+        if (vxGetStatus((vx_reference)g) == VX_SUCCESS)
         {
             vx_image virts[] = {
                 vxCreateVirtualImage(g, 0, 0, VX_DF_IMAGE_VIRT), // blurred

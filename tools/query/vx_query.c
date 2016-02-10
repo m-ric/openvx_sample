@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 {
     vx_status status = VX_SUCCESS;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_char implementation[VX_MAX_IMPLEMENTATION_NAME];
         vx_char *extensions = NULL;

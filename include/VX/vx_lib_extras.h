@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -26,7 +26,6 @@
 
 /*! \file
  * \brief Extras Extension.
- * \author Erik Rainey <erik.rainey@gmail.com>
  *
  * \defgroup group_extras_ext Khronos Extras Extension.
  * \brief A Set of Kernels which extend OpenVX.
@@ -129,14 +128,14 @@ enum vx_kernel_extras_ext_e {
      */
     VX_KERNEL_EXTRAS_IMAGE_LISTER = VX_KERNEL_BASE(VX_ID_KHRONOS, VX_LIBRARY_KHR_EXTRAS) + 0x5,
 
-    /*! \brief The Euclidean Non-Maximum Suppression Kernel.
-     * \param [in] vx_image The VX_DF_IMAGE_S32 image.
+    /*! \brief The Euclidean Non-Maximum Suppression Kernel for Harris Corners.
+     * \param [in] vx_image The VX_DF_IMAGE_F32 image.
      * \param [in] vx_scalar The minimum threshold
      * \param [in] vx_scalar The euclidean distance from the considered pixel.
-     * \param [out] vx_image The VX_DF_IMAGE_S32 image.
+     * \param [out] vx_image The VX_DF_IMAGE_F32 image.
      * \ingroup group_vision_function_euclidean_nonmax
      */
-    VX_KERNEL_EXTRAS_EUCLIDEAN_NONMAXSUPPRESSION = VX_KERNEL_BASE(VX_ID_KHRONOS, VX_LIBRARY_KHR_EXTRAS) + 0x6,
+    VX_KERNEL_EXTRAS_EUCLIDEAN_NONMAXSUPPRESSION_HARRIS = VX_KERNEL_BASE(VX_ID_KHRONOS, VX_LIBRARY_KHR_EXTRAS) + 0x6,
 
     /*! \brief Elementwise binary norm kernel.
      * \param [in] vx_image Left image (VX_DF_IMAGE_S16).
@@ -221,22 +220,24 @@ vx_node vxHarrisScoreNode(vx_graph graph,
                          vx_image gx,
                          vx_image gy,
                          vx_scalar sensitivity,
+                         vx_scalar grad_size,
                          vx_scalar block_size,
                          vx_image score);
 
 vx_status vxuHarrisScore(vx_context context, vx_image gx,
                          vx_image gy,
                          vx_scalar sensitivity,
+                         vx_scalar grad_size,
                          vx_scalar block_size,
                          vx_image score);
 
-vx_node vxEuclideanNonMaxNode(vx_graph graph,
+vx_node vxEuclideanNonMaxHarrisNode(vx_graph graph,
                               vx_image input,
                               vx_scalar strength_thresh,
                               vx_scalar min_distance,
                               vx_image output);
 
-vx_status vxuEuclideanNonMax(vx_context context, vx_image input,
+vx_status vxuEuclideanNonMaxHarris(vx_context context, vx_image input,
                              vx_scalar strength_thresh,
                              vx_scalar min_distance,
                              vx_image output);

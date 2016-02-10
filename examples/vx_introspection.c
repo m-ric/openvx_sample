@@ -52,10 +52,10 @@ vx_status vx_example_introspection()
         //! [target_name]
         if (status == VX_SUCCESS) {
         //! [num]
-        vx_size num_kernels = 0ul;
+        vx_size num_kernels = 0;
         status = vxQueryTarget(target, VX_TARGET_ATTRIBUTE_NUMKERNELS, &num_kernels, sizeof(num_kernels));
         //! [num]
-        if (num_kernels > 0ul) {
+        if (num_kernels > 0) {
         //! [malloc]
         vx_kernel_info_t *table = (vx_kernel_info_t *)calloc(num_kernels, sizeof(vx_kernel_info_t));
         status = vxQueryTarget(target, VX_TARGET_ATTRIBUTE_KERNELTABLE, table, num_kernels*sizeof(vx_kernel_info_t));
@@ -114,10 +114,10 @@ vx_status vx_example_introspection()
     vx_context context = vxCreateContext();
     //! [context]
     //! [num]
-    vx_size k, num_kernels = 0ul;
+    vx_size k, num_kernels = 0;
     vx_status status = vxQueryContext(context, VX_CONTEXT_ATTRIBUTE_UNIQUE_KERNELS, &num_kernels, sizeof(num_kernels));
     //! [num]
-    if (num_kernels > 0ul) {
+    if (num_kernels > 0) {
     //! [malloc]
     vx_size size = num_kernels * sizeof(vx_kernel_info_t);
     vx_kernel_info_t *table = (vx_kernel_info_t *)malloc(size);

@@ -38,7 +38,7 @@
  */
 static vx_kernel_description_t *kernels[] = {
     &edge_trace_kernel,
-    &euclidian_nonmax_kernel,
+    &euclidian_nonmax_harris_kernel,
     &harris_score_kernel,
     &laplacian3x3_kernel,
     &lister_kernel,

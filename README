@@ -76,7 +76,7 @@ Pre-requisite:
     Windows:
     --------
     Visual studio 12 (2013) or higher in order to create VS solution and use VS compiler to build OpenVX and related projects. (Need DEVENV in PATH)
-    Or Cygwin.
+	Or Cygwin.
 
     Android:
     --------
@@ -89,7 +89,7 @@ Building:
     From VS / Cygwin command prompt:
 
     > python Build.py --help
-
+	
     In case of Visual Studio solution, the default CMAKE_GENERATOR is "Visual Studio 12", you can change it with --gen option. (cmake --help present the supported generators)
 
     Linux:
@@ -116,6 +116,28 @@ Building:
     OS - Win / Linux / Android. (Cygwin is equal to Linux)
     ARCH - 32 / 64
     CONF - Release / Debug.
+	
+    Enable / Disable experimental options (Optional):
+    -------------------------------------------------
+	Windows:
+	--------
+        (1) Run the python script, set --build=false
+        (2) Open cmake GUI
+            (2.1) Set the source code directory to the openvx root folder, where the root CMakeLists.txt is located
+            (2.2) Set the build directory to ${OUTPUT_PATH}/build/${OS}/${ARCH}
+        (3) Select the options to enable / disable
+        (4) Click the 'Configure' button in order to update the "CMakeCache.txt" file (Do not click on 'Generate' button)
+        (5) Re-run the python script. (You can set --build=true or build from Visual Studio)
+		
+        Linux:
+        ------
+        (1) Run the python script, set --build=false
+        (2) Navigate to ${OUTPUT_PATH}/build/${OS}/${ARCH}/${CONF}
+        (3) > make edit_cache
+        (4) Select the options to enable / disable
+        (5) click 'c' to configure
+        (6) click 'g' to generate the make files
+        (7) > make install
 
 Install:
 --------
@@ -283,6 +305,10 @@ vx_example:
       openvx specification, but is an example of how graph parameters
       can be use to abstract the details of a graph to clients.
 
+vx_bug13510:
+vx_bug13517:
+vx_bug13518:
+    - Exercise code exposing fixed bugs.
 
 4   DEBUGGING
 ------------------------------------------------------------------------

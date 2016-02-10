@@ -23,10 +23,8 @@
 # @url http://github.com/emrainey/Concerto
 
 # Set the default values if not defined or empty string
-ifndef VERSION
-VERSION := 1.0
-else ifeq ($(VERSION),)
-VERSION := 1.0
+ifeq ($(VERSION),)
+VERSION := $(strip $(shell $(CAT) $(CONCERTO_ROOT)/../VERSION))
 endif
 
 -include $(CONCERTO_ROOT)/components/glut.mak

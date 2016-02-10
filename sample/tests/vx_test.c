@@ -150,7 +150,7 @@ vx_status vx_test_framework_load_extension(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         status = vxLoadKernels(context, "xyz");
         if (status == VX_SUCCESS)
@@ -185,7 +185,7 @@ vx_status vx_test_framework_load_kernel_node(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         if (vxLoadKernels(context, "xyz") == VX_SUCCESS)
         {
@@ -193,7 +193,7 @@ vx_status vx_test_framework_load_kernel_node(int argc, char *argv[])
             if (kernel)
             {
                 vx_graph graph = vxCreateGraph(context);
-                if (graph)
+                if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
                 {
                     vx_image input = vxCreateImage(context, 640, 480, VX_DF_IMAGE_U8);
                     vx_image output = vxCreateImage(context, 640, 480, VX_DF_IMAGE_U8);
@@ -232,10 +232,10 @@ vx_status vx_test_framework_copy(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 width = 640;
             vx_uint32 height = 480;
@@ -322,7 +322,7 @@ vx_status vx_test_framework_copy_virtual(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 width = 640;
         vx_uint32 height = 480;
@@ -333,7 +333,7 @@ vx_status vx_test_framework_copy_virtual(int argc, char *argv[])
         };
         vx_graph graph = vxCreateGraph(context);
         status |= vxLoadKernels(context, "openvx-debug");
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 errors = 0u;
             vx_image virt = vxCreateVirtualImage(graph, 0, 0, VX_DF_IMAGE_VIRT);
@@ -411,10 +411,10 @@ vx_status vx_test_framework_virtualimage(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 width = 640u;
             vx_uint32 height = 480u;
@@ -510,10 +510,10 @@ vx_status vx_test_framework_heads(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 width = 640;
             vx_uint32 height = 480;
@@ -575,10 +575,10 @@ vx_status vx_test_framework_unvisited(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 width = 640;
             vx_uint32 height = 480;
@@ -640,7 +640,7 @@ vx_status vx_test_framework_targets(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 numTargets = 0;
         vx_char implementation[VX_MAX_IMPLEMENTATION_NAME];
@@ -713,7 +713,7 @@ vx_status vx_test_framework_kernels(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
 #if defined(EXPERIMENTAL_USE_TARGET) && defined(EXPERIMENTAL_USE_VARIANTS)
         char kernelName[] = "khronos.c_model:org.khronos.openvx.box3x3:duplicate";
@@ -765,10 +765,10 @@ vx_status vx_test_framework_delay_graph(int argc, char *argv[])
     vx_df_image f = VX_DF_IMAGE_U8;
     vx_uint32 i;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
 #define DEPTH_TEST (3)
             vx_image images[DEPTH_TEST];
@@ -891,7 +891,7 @@ vx_status vx_test_framework_async(int argc, char *argv[])
 {
     vx_status s1,s2,status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 w = 320, h = 240;
         vx_uint8 a1 = 0x5A, a2 = 0xA5;
@@ -906,7 +906,9 @@ vx_status vx_test_framework_async(int argc, char *argv[])
         vx_graph g1 = vxCreateGraph(context);
         vx_graph g2 = vxCreateGraph(context);
         status |= vxLoadKernels(context, "openvx-debug");
-        if (g1 && g2 && status == VX_SUCCESS)
+        if ( vxGetStatus((vx_reference)g1) == VX_SUCCESS &&
+             vxGetStatus((vx_reference)g2) == VX_SUCCESS &&
+             status == VX_SUCCESS)
         {
             vx_node nodes[] = {
                 vxCopyImageNode(g1, images[0], images[1]),
@@ -959,7 +961,7 @@ vx_status vx_test_direct_copy_image(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_imagepatch_addressing_t addrs[] = {
                 {WIDTH, HEIGHT, sizeof(vx_uint8), WIDTH * sizeof(vx_uint8), VX_SCALE_UNITY, VX_SCALE_UNITY, 1, 1},
@@ -1005,7 +1007,7 @@ vx_status vx_test_direct_copy_external_image(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
        vx_uint32 width = 640;
         vx_uint32 height = 480;
@@ -1040,7 +1042,7 @@ vx_status vx_test_graph_channels_yuv(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 i = 0, w = 640, h = 480;
         vx_image images[] = {
@@ -1055,7 +1057,7 @@ vx_status vx_test_graph_channels_yuv(int argc, char *argv[])
         if (status == VX_SUCCESS)
         {
             vx_graph graph = vxCreateGraph(context);
-            if (graph)
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
             {
                 vx_node nodes[] = {
                     vxFReadImageNode(graph, "colorbars_640x480_I444.rgb", images[0]),
@@ -1098,7 +1100,7 @@ vx_status vx_test_graph_bikegray(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vxRegisterHelperAsLogReader(context);
         vx_uint32 i = 0, w = 640, h = 480, w2 = 300, h2 = 200, x = 0, y = 0;
@@ -1181,7 +1183,7 @@ vx_status vx_test_graph_bikegray(int argc, char *argv[])
         if (status == VX_SUCCESS)
         {
             vx_graph graph = vxCreateGraph(context);
-            if (graph)
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
             {
                 vx_node nodes[] = {
                     vxFReadImageNode(graph, "bikegray_640x480.pgm", images[0]),
@@ -1258,8 +1260,8 @@ vx_status vx_test_graph_bikegray(int argc, char *argv[])
                         vxAccessArrayRange(maxLoc, 0, 1, &stride, (void **)&p_max_l, VX_READ_ONLY);
                         vxCommitArrayRange(maxLoc, 0, 0, p_max_l);
 
-                        vxAccessScalarValue(minVal, &min_v);
-                        vxAccessScalarValue(maxVal, &max_v);
+                        vxReadScalarValue(minVal, &min_v);
+                        vxReadScalarValue(maxVal, &max_v);
 
                         printf("Min Value in AbsDiff = %u, at %d,%d\n", min_v, min_l.x, min_l.y);
                         printf("Max Value in AbsDiff = %u, at %d,%d\n", max_v, max_l.x, max_l.y);
@@ -1269,8 +1271,8 @@ vx_status vx_test_graph_bikegray(int argc, char *argv[])
                         {
                             printf("histogram[%u] = %d\n", i, histogram[i]);
                         }
-                        vxAccessScalarValue(s_mean, &mean);
-                        vxAccessScalarValue(s_stddev, &stddev);
+                        vxReadScalarValue(s_mean, &mean);
+                        vxReadScalarValue(s_stddev, &stddev);
                         printf("AbsDiff Mean = %lf\n", mean);
                         printf("AbsDiff Stddev = %lf\n", stddev);
                         vxCommitDistribution(dist, histogram);
@@ -1320,7 +1322,7 @@ vx_status vx_test_graph_opencl(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
 #if defined(EXPERIMENTAL_USE_TARGET)
         vx_target target = vxGetTargetByName(context, "pc.opencl");
@@ -1339,7 +1341,7 @@ vx_status vx_test_graph_opencl(int argc, char *argv[])
             if (status == VX_SUCCESS)
             {
                 vx_graph graph = vxCreateGraph(context);
-                if (graph)
+                if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
                 {
                     vx_node nodes[] = {
                         vxFReadImageNode(graph, "bikegray_640x480.pgm", images[0]),
@@ -1412,7 +1414,7 @@ vx_status vx_test_graph_lena(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 i = 0, w = 512, h = 512;
         vx_image images[] = {
@@ -1453,12 +1455,10 @@ vx_status vx_test_graph_lena(int argc, char *argv[])
         };
 
         CHECK_ALL_ITEMS(images, i, status, exit);
-        vxAccessConvolutionCoefficients(conv[0], NULL);
-        vxCommitConvolutionCoefficients(conv[0], (vx_int16 *)mat1);
-        vxAccessConvolutionCoefficients(conv[1], NULL);
-        vxCommitConvolutionCoefficients(conv[1], (vx_int16 *)mat2);
+        vxWriteConvolutionCoefficients(conv[0], (vx_int16 *)mat1);
+        vxWriteConvolutionCoefficients(conv[1], (vx_int16 *)mat2);
         vxSetAffineRotationMatrix(affine, 45.0, 0.5, (vx_float32)w/2, (vx_float32)h/2);
-        vxCommitMatrix(perspective, mat4);
+        vxWriteMatrix(perspective, mat4);
 
         status |= vxLoadKernels(context, "openvx-debug");
         status |= vxLoadKernels(context, "openvx-extras");
@@ -1467,7 +1467,7 @@ vx_status vx_test_graph_lena(int argc, char *argv[])
         {
             vx_perf_t perf;
             vx_graph graph = vxCreateGraph(context);
-            if (graph)
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
             {
                 vx_node nodes[] = {
                     vxFReadImageNode(graph, "lena_512x512.pgm", images[0]),
@@ -1556,7 +1556,7 @@ vx_status vx_test_graph_channels_rgb(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 i = 0, diffs = 0u;
         vx_uint32 w = 640, h = 480;
@@ -1579,7 +1579,7 @@ vx_status vx_test_graph_channels_rgb(int argc, char *argv[])
         if (status == VX_SUCCESS)
         {
             vx_graph graph = vxCreateGraph(context);
-            if (graph)
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
             {
                 vx_node nodes[] = {
                     vxFReadImageNode(graph, "colorbars_640x480_I444.rgb", images[0]),
@@ -1627,7 +1627,7 @@ vx_status vx_test_graph_accum(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 i = 0, w = 640, h = 480, r = 8;
         vx_image images[] = {
@@ -1647,7 +1647,7 @@ vx_status vx_test_graph_accum(int argc, char *argv[])
         if (status == VX_SUCCESS)
         {
             vx_graph graph = vxCreateGraph(context);
-            if (graph)
+            if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
             {
                 vx_node nodes[] = {
                     vxFReadImageNode(graph, "bikegray_640x480.pgm", images[0]),
@@ -1743,7 +1743,7 @@ vx_status vx_test_graph_bitwise(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 i = 0, width = 640, height = 480;
         vx_graph graph = 0;
@@ -1771,7 +1771,7 @@ vx_status vx_test_graph_bitwise(int argc, char *argv[])
             FAIL(release_context, "can't load debug extensions");
 
         graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_node nodes[] = {
                 vxAndNode(graph, images[0], images[1], images[2]),
@@ -2207,9 +2207,9 @@ vx_status vx_test_graph_arit(int argc, char *argv[])
                              }
                            }
 
-                           vxCommitImagePatch(dest_image, NULL, 0, &dest_addr, &dbase);
-                           vxCommitImagePatch(src1_image, NULL, 0, &image1_addr, &base1);
-                           vxCommitImagePatch(src0_image, NULL, 0, &image0_addr, &base0);
+                           vxCommitImagePatch(dest_image, NULL, 0, &dest_addr, dbase);
+                           vxCommitImagePatch(src1_image, NULL, 0, &image1_addr, base1);
+                           vxCommitImagePatch(src0_image, NULL, 0, &image0_addr, base0);
 
                            vxReleaseImage(&dest_image);
                        }
@@ -2247,7 +2247,7 @@ vx_status vx_test_graph_corners(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 width = 160, height = 120, n;
         vx_float32 k = 0.15f;
@@ -2270,7 +2270,7 @@ vx_status vx_test_graph_corners(int argc, char *argv[])
         vx_array fast_arr = vxCreateArray(context, VX_TYPE_KEYPOINT, 1000);
         vx_graph graph = vxCreateGraph(context);
         vxLoadKernels(context, "openvx-debug");
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_node nodes[] = {
                 vxFReadImageNode(graph, "shapes.pgm", images[0]),
@@ -2321,7 +2321,7 @@ vx_status vx_test_graph_tracker(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_uint32 n;
         vx_uint32 width = 3072;
@@ -2345,7 +2345,7 @@ vx_status vx_test_graph_tracker(int argc, char *argv[])
         vx_scalar min_distance_s =  vxCreateScalar(context,VX_TYPE_FLOAT32,&min_distance);
         vx_scalar sensitivity_s =  vxCreateScalar(context,VX_TYPE_FLOAT32,&sensitivity);
         vx_scalar sens_thresh_s = vxCreateScalar(context,VX_TYPE_FLOAT32,&sens_thresh);
-        vx_scalar num_corners_s = vxCreateScalar(context,VX_TYPE_UINT32,&num_corners);;
+        vx_scalar num_corners_s = vxCreateScalar(context,VX_TYPE_SIZE,&num_corners);;
 
         vx_scalar scalars[] = {
                 epsilon_s,
@@ -2377,7 +2377,7 @@ vx_status vx_test_graph_tracker(int argc, char *argv[])
         };
 
         vx_graph graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_node nodes[] = {
                 vxChannelExtractNode(graph, images[0], VX_CHANNEL_Y, images[2]),
@@ -2434,12 +2434,12 @@ vx_status vx_test_graph_dot_export(int argc, char *argv[])
 {
     vx_status status = VX_FAILURE;
     vx_context context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_graph graph = vxCreateGraph(context);
         vxLoadKernels(context, "openvx-debug");
         status = vxGetStatus((vx_reference)graph);
-        if (graph && status == VX_SUCCESS)
+        if (status == VX_SUCCESS)
         {
             vx_image images[] = {
                 vxCreateVirtualImage(graph, 0, 0, VX_DF_IMAGE_VIRT),
@@ -2474,7 +2474,7 @@ vx_status vx_xml_fullimport(int argc, char *argv[])
     vx_context context = 0;
     char filename[256] = "test.xml";
     context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_reference ref = 0;
         vx_import xml_import;
@@ -2523,7 +2523,7 @@ vx_status vx_xml_fullimport(int argc, char *argv[])
 
                 /* Option 1: No known names, check all in a loop */
                 for(i = 0; i<count; i++) {
-                    ref = vxGetReferenceByIndex(xml_import, i);
+                    ref = vxGetImportReferenceByIndex(xml_import, i);
                     if(vxQueryReference(ref, VX_REF_ATTRIBUTE_TYPE, &type, sizeof(type)) == VX_SUCCESS) {
                         if(type == VX_TYPE_GRAPH) {
                             vx_perf_t perf;
@@ -2542,7 +2542,7 @@ vx_status vx_xml_fullimport(int argc, char *argv[])
                 vx_char *names[2] = { "GRAPH1", "GRAPH2"};
                 vx_reference refs[2];
                 for(i = 0; i<2; i++) {
-                    refs[i] = vxGetReferenceByName(xml_import, names[i]);
+                    refs[i] = vxGetImportReferenceByName(xml_import, names[i]);
                     if(refs[i]) {
                         vx_perf_t perf;
                         graphStatus |= vxProcessGraph((vx_graph)refs[i]);
@@ -2553,8 +2553,8 @@ vx_status vx_xml_fullimport(int argc, char *argv[])
                 }
 
                 /* Option 2.b: Use known names and release import object before graphs (should work) */
-                refs[0] = vxGetReferenceByName(xml_import, names[0]);
-                refs[1] = vxGetReferenceByName(xml_import, names[1]);
+                refs[0] = vxGetImportReferenceByName(xml_import, names[0]);
+                refs[1] = vxGetImportReferenceByName(xml_import, names[1]);
                 vxReleaseImport(&xml_import);
 
                 for(i = 0; i<2; i++) {
@@ -2580,7 +2580,7 @@ vx_status vx_xml_fullexport(int argc, char *argv[])
     vx_status status = VX_FAILURE;
     vx_context context = 0;
     context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vxLoadKernels(context, "openvx-debug");
 
@@ -2642,7 +2642,7 @@ vx_status vx_xml_fullexport(int argc, char *argv[])
         vx_distribution dist = vxCreateDistribution(context, 16, 0, 256);
         vx_pyramid pyr = vxCreatePyramid(context, 4, VX_SCALE_PYRAMID_HALF, w*4, h*4, VX_DF_IMAGE_U8);
         vx_graph graph = vxCreateGraph(context);
-        if (graph && vxGetStatus((vx_reference)graph) == VX_SUCCESS)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vxSetReferenceName((vx_reference)graph, "GRAPH1");
             vx_int32 th = 240, lwr = 10;
@@ -2951,13 +2951,10 @@ vx_status vx_xml_fullexport(int argc, char *argv[])
             for (x = 0u; x < 256; x++)
                 mylut[x] = (vx_uint8)((x-1)&0xFF);
             vxCommitLUT(lut, mylut);
-            vxAccessMatrix(matf, NULL);
-            vxCommitMatrix(matf, fmat);
-            vxAccessMatrix(mati, NULL);
-            vxCommitMatrix(mati, imat);
+            vxWriteMatrix(matf, fmat);
+            vxWriteMatrix(mati, imat);
             vxSetConvolutionAttribute(conv, VX_CONVOLUTION_ATTRIBUTE_SCALE, &cscale, sizeof(cscale));
-            vxAccessConvolutionCoefficients(conv, NULL);
-            vxCommitConvolutionCoefficients(conv, (vx_int16 *)sobel_x);
+            vxWriteConvolutionCoefficients(conv, (vx_int16 *)sobel_x);
             vxSetThresholdAttribute(thresh, VX_THRESHOLD_ATTRIBUTE_THRESHOLD_VALUE, &th, sizeof(th));
             vxSetThresholdAttribute(dblthr, VX_THRESHOLD_ATTRIBUTE_THRESHOLD_LOWER, &lwr, sizeof(lwr));
             vxSetThresholdAttribute(dblthr, VX_THRESHOLD_ATTRIBUTE_THRESHOLD_UPPER, &th, sizeof(th));
@@ -2990,7 +2987,7 @@ vx_status vx_xml_loopback(int argc, char *argv[])
     status = vx_xml_fullexport(argc, argv);
 
     context = vxCreateContext();
-    if (context)
+    if (vxGetStatus((vx_reference)context) == VX_SUCCESS)
     {
         vx_import xml_import;
         vx_status import_status = VX_FAILURE;

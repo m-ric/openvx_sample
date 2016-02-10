@@ -51,7 +51,7 @@ vx_status vxuNonMaxSuppression(vx_context context, vx_image mag, vx_image phase,
 {
     vx_status status = VX_SUCCESS;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxNonMaxSuppressionNode(graph, mag, phase, edge);
         if (node)
@@ -85,7 +85,7 @@ vx_status vxuLaplacian3x3(vx_context context, vx_image input, vx_image output)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxLaplacian3x3Node(graph, input, output);
         if (node)
@@ -120,7 +120,7 @@ vx_status vxuScharr3x3(vx_context context, vx_image input, vx_image output1,vx_i
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxScharr3x3Node(graph, input, output1,output2);
         if (node)
@@ -157,7 +157,7 @@ vx_status vxuSobelMxN(vx_context context, vx_image input, vx_scalar win, vx_imag
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxSobelMxNNode(graph, input, win, gx, gy);
         if (node)
@@ -175,17 +175,19 @@ vx_status vxuSobelMxN(vx_context context, vx_image input, vx_scalar win, vx_imag
     return status;
 }
 
-vx_node vxHarrisScoreNode(vx_graph graph,
-                          vx_image gx,
-                          vx_image gy,
+vx_node vxHarrisScoreNode(vx_graph	graph,
+                          vx_image	gx,
+                          vx_image	gy,
                           vx_scalar sensitivity,
+                          vx_scalar grad_size,
                           vx_scalar block_size,
-                          vx_image score)
+                          vx_image	score)
 {
     vx_reference params[] = {
         (vx_reference)gx,
         (vx_reference)gy,
         (vx_reference)sensitivity,
+        (vx_reference)grad_size,
         (vx_reference)block_size,
         (vx_reference)score,
     };
@@ -196,17 +198,19 @@ vx_node vxHarrisScoreNode(vx_graph graph,
     return node;
 }
 
-vx_status vxuHarrisScore(vx_context context, vx_image gx,
-                         vx_image gy,
-                         vx_scalar sensitivity,
-                         vx_scalar block_size,
-                         vx_image score)
+vx_status vxuHarrisScore(vx_context context,
+                         vx_image	gx,
+                         vx_image	gy,
+                         vx_scalar	sensitivity,
+                         vx_scalar	grad_size,
+                         vx_scalar	block_size,
+                         vx_image	score)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
-        vx_node node = vxHarrisScoreNode(graph, gx, gy, sensitivity, block_size, score);
+        vx_node node = vxHarrisScoreNode(graph, gx, gy, sensitivity, grad_size, block_size, score);
         if (node)
         {
             status = vxVerifyGraph(graph);
@@ -222,7 +226,7 @@ vx_status vxuHarrisScore(vx_context context, vx_image gx,
     return status;
 }
 
-vx_node vxEuclideanNonMaxNode(vx_graph graph,
+vx_node vxEuclideanNonMaxHarrisNode(vx_graph graph,
                               vx_image input,
                               vx_scalar strength_thresh,
                               vx_scalar min_distance,
@@ -235,22 +239,22 @@ vx_node vxEuclideanNonMaxNode(vx_graph graph,
         (vx_reference)output,
     };
     vx_node node = vxCreateNodeByStructure(graph,
-                                           VX_KERNEL_EXTRAS_EUCLIDEAN_NONMAXSUPPRESSION,
+                                           VX_KERNEL_EXTRAS_EUCLIDEAN_NONMAXSUPPRESSION_HARRIS,
                                            params,
                                            dimof(params));
     return node;
 }
 
-vx_status vxuEuclideanNonMax(vx_context context, vx_image input,
+vx_status vxuEuclideanNonMaxHarris(vx_context context, vx_image input,
                              vx_scalar strength_thresh,
                              vx_scalar min_distance,
                              vx_image output)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
-        vx_node node = vxEuclideanNonMaxNode(graph, input, strength_thresh, min_distance, output);
+        vx_node node = vxEuclideanNonMaxHarrisNode(graph, input, strength_thresh, min_distance, output);
         if (node)
         {
             status = vxVerifyGraph(graph);
@@ -284,7 +288,7 @@ vx_status vxuImageLister(vx_context context, vx_image input,
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxImageListerNode(graph, input, arr, num_points);
         if (node)

@@ -32,7 +32,7 @@
 #include <VX/vx_lib_debug.h>
 #include <VX/vx_helper.h>
 
-vx_status VX_CALLBACK vxCompareImagesKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+vx_status VX_CALLBACK vxCompareImagesKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 3)
@@ -102,7 +102,7 @@ vx_status VX_CALLBACK vxCompareImagesKernel(vx_node node, vx_reference *paramete
                         }
                     }
                 }
-                vxCommitScalarValue(diffs, &numDiffs);
+                vxWriteScalarValue(diffs, &numDiffs);
                 for (p = 0; p < a_planes; p++)
                 {
                     status |= vxCommitImagePatch(a, NULL, p, &a_addrs[p], a_base_ptrs[p]);

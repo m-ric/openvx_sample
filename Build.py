@@ -82,6 +82,7 @@ def main():
     parser.add_option("--rebuild", dest="rebuild", help="Rebuild the targets (Use it when you add source file) [Default False]", default='False')
     parser.add_option("--openmp", dest="openmp", help="Build also OpenMP target [Default False]", default='False')
     parser.add_option("--opencl", dest="opencl", help="Build also OpenCL target [Default False]", default='False')
+    parser.add_option("--package", dest="package", help="Build packages", default='False')
 
     (options, args) = parser.parse_args()
     if (options.env_vars <> "False"):
@@ -174,6 +175,8 @@ def main():
         cmd += "-DEXPERIMENTAL_USE_OPENMP=1 "
     if (options.opencl.lower() <> "false"):
         cmd += "-DEXPERIMENTAL_USE_OPENCL=1 "
+    if (options.package.lower() <> "false"):
+        cmd += "-DBUILD_PACKAGES=1 "
     print cmd
     subprocess.Popen(cmd, shell=True).wait()
 

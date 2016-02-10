@@ -34,7 +34,7 @@ vx_action VX_CALLBACK analyze_brightness(vx_node node) {
         vxQueryParameter(pmax, VX_PARAMETER_ATTRIBUTE_REF, &smax, sizeof(smax));
         if (smax) {
             vx_uint8 value = 0u;
-            vxAccessScalarValue(smax, &value);
+            vxReadScalarValue(smax, &value);
             if (value >= MY_DESIRED_THRESHOLD) {
                 action = VX_ACTION_CONTINUE;
             }
@@ -50,7 +50,8 @@ vx_status vx_example_callback(vx_context context, vx_image input, vx_image outpu
     vx_status status = VX_SUCCESS;
     //! [graph setup]
     vx_graph graph = vxCreateGraph(context);
-    if (graph) {
+    status = vxGetStatus((vx_reference)graph);
+    if (status == VX_SUCCESS) {
         vx_uint8 lmin = 0, lmax = 0;
         vx_uint32 minCount = 0, maxCount = 0;
         vx_scalar scalars[] = {

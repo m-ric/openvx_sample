@@ -73,7 +73,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxSetReferenceName(vx_reference ref, const vx
     return status;
 }
 
-VX_API_ENTRY vx_reference VX_API_CALL vxGetReferenceByIndex(vx_import import, vx_uint32 index)
+VX_API_ENTRY vx_reference VX_API_CALL vxGetImportReferenceByIndex(vx_import import, vx_uint32 index)
 {
     vx_reference ref = NULL;
     if (import && import->base.type == VX_TYPE_IMPORT)
@@ -97,7 +97,7 @@ VX_API_ENTRY vx_reference VX_API_CALL vxGetReferenceByIndex(vx_import import, vx
     return ref;
 }
 
-VX_API_ENTRY vx_reference VX_API_CALL vxGetReferenceByName(vx_import import, const vx_char *name)
+VX_API_ENTRY vx_reference VX_API_CALL vxGetImportReferenceByName(vx_import import, const vx_char *name)
 {
     vx_reference ref = NULL;
     if (import && import->base.type == VX_TYPE_IMPORT)

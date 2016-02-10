@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 The Khronos Group Inc.
+ * Copyright (c) 2012-2015 The Khronos Group Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and/or associated documentation files (the
@@ -26,7 +26,6 @@
 
 /*! \brief The Interpolation Type Query Extension.
  * \file
- * \author Erik Rainey <erik.rainey@gmail.com>
  */
 
 #define OPENVX_KHR_INTERP   "vx_khr_interpolation"

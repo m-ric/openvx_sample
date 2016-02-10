@@ -37,7 +37,7 @@ vx_status VX_CALLBACK vxTilingKernel(vx_node node, vx_reference parameters[], vx
 
 static const vx_char name[VX_MAX_TARGET_NAME] = "khronos.c_model";
 
-static vx_status VX_CALLBACK vxInvalidKernel(vx_node node, vx_reference parameters[], vx_uint32 num)
+static vx_status VX_CALLBACK vxInvalidKernel(vx_node node, const vx_reference parameters[], vx_uint32 num)
 {
     return VX_ERROR_NOT_SUPPORTED;
 }
@@ -246,6 +246,7 @@ vx_kernel vxTargetAddKernel(vx_target target,
 {
     vx_uint32 k = 0u;
     vx_kernel_t *kernel = NULL;
+    // vxSemWait(&target->base.lock);
     for (k = target->num_kernels; k < VX_INT_MAX_KERNELS; k++)
     {
         kernel = &(target->kernels[k]);
@@ -263,6 +264,7 @@ vx_kernel vxTargetAddKernel(vx_target target,
         }
         kernel = NULL;
     }
+    // vxSemPost(&target->base.lock);
     return (vx_kernel)kernel;
 }
 
@@ -379,7 +381,7 @@ vx_status VX_CALLBACK vxTilingKernel(vx_node node, vx_reference parameters[], vx
         }
         else if (types[p] == VX_TYPE_SCALAR)
         {
-            vxAccessScalarValue((vx_scalar)parameters[p], (void *)&scalars[p]);
+            vxReadScalarValue((vx_scalar)parameters[p], (void *)&scalars[p]);
             params[p] = &scalars[p];
         }
 #if defined(OPENVX_TILING_1_1)

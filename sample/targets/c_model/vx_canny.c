@@ -36,7 +36,7 @@
 
 /*! \note Look at \ref vxCannyEdgeDetectorNode to see how this pyramid construction works */
 
-static vx_status VX_CALLBACK vxCannyEdgeKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxCannyEdgeKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 5)
@@ -47,7 +47,7 @@ static vx_status VX_CALLBACK vxCannyEdgeKernel(vx_node node, vx_reference *param
     return status;
 }
 
-static vx_status VX_CALLBACK vxCannyEdgeInitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxCannyEdgeInitializer(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 5)
@@ -66,7 +66,7 @@ static vx_status VX_CALLBACK vxCannyEdgeInitializer(vx_node node, vx_reference *
             return status;
         }
         graph = vxCreateGraph(context);
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 i;
             vx_image virts[] = {
@@ -86,6 +86,9 @@ static vx_status VX_CALLBACK vxCannyEdgeInitializer(vx_node node, vx_reference *
             };
 
             vx_border_mode_t borders;
+
+            graph->parentGraph = node->graph;
+
             vxQueryNode(node, VX_NODE_ATTRIBUTE_BORDER_MODE, &borders, sizeof(borders));
             for (i = 0; i < dimof(nodes); i++) {
                 vxSetNodeAttribute(nodes[i], VX_NODE_ATTRIBUTE_BORDER_MODE, &borders, sizeof(borders));
@@ -111,7 +114,7 @@ static vx_status VX_CALLBACK vxCannyEdgeInitializer(vx_node node, vx_reference *
     return status;
 }
 
-static vx_status VX_CALLBACK vxCannyEdgeDeinitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxCannyEdgeDeinitializer(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 5)
@@ -175,7 +178,7 @@ static vx_status VX_CALLBACK vxCannyEdgeInputValidator(vx_node node, vx_uint32 i
                 if (stype == VX_TYPE_INT32)
                 {
                     vx_int32 gs = 0;
-                    vxAccessScalarValue(value, &gs);
+                    vxReadScalarValue(value, &gs);
                     if ((gs == 3) || (gs == 5) || (gs == 7))
                     {
                         status = VX_SUCCESS;
@@ -204,7 +207,7 @@ static vx_status VX_CALLBACK vxCannyEdgeInputValidator(vx_node node, vx_uint32 i
             if (value)
             {
                 vx_enum norm = 0;
-                vxAccessScalarValue(value, &norm);
+                vxReadScalarValue(value, &norm);
                 if ((norm == VX_NORM_L1) ||
                     (norm == VX_NORM_L2))
                 {

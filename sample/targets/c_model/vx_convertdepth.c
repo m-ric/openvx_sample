@@ -34,7 +34,7 @@
 #include <c_model.h>
 
 
-static vx_status VX_CALLBACK vxConvertDepthKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxConvertDepthKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 4)
     {
@@ -96,7 +96,7 @@ static vx_status VX_CALLBACK vxConvertDepthInputValidator(vx_node node, vx_uint3
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum overflow_policy = 0;
-                    vxAccessScalarValue(scalar, &overflow_policy);
+                    vxReadScalarValue(scalar, &overflow_policy);
                     if ((overflow_policy == VX_CONVERT_POLICY_WRAP) ||
                         (overflow_policy == VX_CONVERT_POLICY_SATURATE))
                     {
@@ -131,7 +131,7 @@ static vx_status VX_CALLBACK vxConvertDepthInputValidator(vx_node node, vx_uint3
                 if (type == VX_TYPE_INT32)
                 {
                     vx_int32 shift = 0;
-                    status = vxAccessScalarValue(scalar, &shift);
+                    status = vxReadScalarValue(scalar, &shift);
                     if (status == VX_SUCCESS)
                     {
                         /*! \internal Allowing \f$ 0 \le shift < 32 \f$ could
@@ -221,7 +221,7 @@ static vx_param_description_t convertdepth_kernel_params[] = {
 
 vx_kernel_description_t convertdepth_kernel = {
     VX_KERNEL_CONVERTDEPTH,
-    "org.khronos.openvx.convert_depth",
+    "org.khronos.openvx.convertdepth",
     vxConvertDepthKernel,
     convertdepth_kernel_params, dimof(convertdepth_kernel_params),
     vxConvertDepthInputValidator,

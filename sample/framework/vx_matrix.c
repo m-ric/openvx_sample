@@ -38,6 +38,7 @@ VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix(vx_context context, vx_enum da
 {
     vx_matrix matrix = NULL;
     vx_size dim = 0ul;
+
     if (vxIsValidContext(context) == vx_false_e)
         return 0;
 
@@ -70,7 +71,7 @@ VX_API_ENTRY vx_matrix VX_API_CALL vxCreateMatrix(vx_context context, vx_enum da
         return (vx_matrix)vxGetErrorObject(context, VX_ERROR_INVALID_DIMENSION);
     }
     matrix = (vx_matrix)vxCreateReference(context, VX_TYPE_MATRIX, VX_EXTERNAL, &context->base);
-    if (matrix && matrix->base.type == VX_TYPE_MATRIX)
+    if (vxGetStatus((vx_reference)matrix) == VX_SUCCESS && matrix->base.type == VX_TYPE_MATRIX)
     {
         matrix->data_type = data_type;
         matrix->columns = columns;
@@ -139,7 +140,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryMatrix(vx_matrix matrix, vx_enum attri
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxAccessMatrix(vx_matrix matrix, void *array)
+VX_API_ENTRY vx_status VX_API_CALL vxReadMatrix(vx_matrix matrix, void *array)
 {
     vx_status status = VX_ERROR_INVALID_REFERENCE;
     if (vxIsValidSpecificReference(&matrix->base, VX_TYPE_MATRIX) == vx_true_e)
@@ -170,7 +171,7 @@ VX_API_ENTRY vx_status VX_API_CALL vxAccessMatrix(vx_matrix matrix, void *array)
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxCommitMatrix(vx_matrix matrix, void *array)
+VX_API_ENTRY vx_status VX_API_CALL vxWriteMatrix(vx_matrix matrix, const void *array)
 {
     vx_status status = VX_ERROR_INVALID_REFERENCE;
     if (vxIsValidSpecificReference(&matrix->base, VX_TYPE_MATRIX) == vx_true_e)

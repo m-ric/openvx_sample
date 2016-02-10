@@ -103,7 +103,7 @@ vx_status vxGetLogEntry(vx_reference r, char message[VX_MAX_LOG_MESSAGE_LEN])
 static void VX_CALLBACK vxHelperLogCallback(vx_context context,
                                 vx_reference ref,
                                 vx_status status,
-                                vx_char string[])
+                                const vx_char string[])
 {
     helper_log.entries[helper_log.last].reference = ref;
     helper_log.entries[helper_log.last].status = status;
@@ -252,7 +252,7 @@ vx_node vxCreateNodeByStructure(vx_graph graph,
     if (kernel)
     {
         node = vxCreateGenericNode(graph, kernel);
-        if (node)
+        if (vxGetStatus((vx_reference)node) == VX_SUCCESS)
         {
             vx_uint32 p = 0;
             for (p = 0; p < num; p++)
@@ -363,7 +363,7 @@ vx_status vxSetAffineRotationMatrix(vx_matrix matrix,
     vxQueryMatrix(matrix, VX_MATRIX_ATTRIBUTE_TYPE, &type, sizeof(type));
     if ((columns == 2) && (rows == 3) && (type == VX_TYPE_FLOAT32))
     {
-        status = vxAccessMatrix(matrix, mat);
+        status = vxReadMatrix(matrix, mat);
         if (status == VX_SUCCESS)
         {
             vx_float32 radians = (angle / 360.0f) * (vx_float32)VX_TAU;
@@ -375,7 +375,7 @@ vx_status vxSetAffineRotationMatrix(vx_matrix matrix,
             mat[0][1] = -b;
             mat[1][1] = a;
             mat[2][1] = (b * center_x) + ((1.0f - a) * center_y);
-            status = vxCommitMatrix(matrix, mat);
+            status = vxWriteMatrix(matrix, mat);
         }
     }
     else
@@ -603,19 +603,15 @@ vx_status vxMatrixTrace(vx_matrix matrix, vx_scalar trace) {
     if (stype == VX_TYPE_INT32) {
         vx_int32 mat[rows][columns];
         vx_int32 t = 0;
-        status |= vxAccessScalarValue(trace, NULL);
-        status |= vxAccessMatrix(matrix, mat);
+        status |= vxReadMatrix(matrix, mat);
         t = vxh_matrix_trace_i32(columns, rows, mat);
-        status |= vxCommitMatrix(matrix, NULL);
-        status |= vxCommitScalarValue(trace, &t);
+        status |= vxWriteScalarValue(trace, &t);
     } else if (stype == VX_TYPE_FLOAT32) {
         vx_float32 mat[rows][columns];
         vx_float32 t = 0.0f;
-        status |= vxAccessScalarValue(trace, NULL);
-        status |= vxAccessMatrix(matrix, mat);
+        status |= vxReadMatrix(matrix, mat);
         t = vxh_matrix_trace_f32(columns, rows, mat);
-        status |= vxCommitMatrix(matrix, NULL);
-        status |= vxCommitScalarValue(trace, &t);
+        status |= vxWriteScalarValue(trace, &t);
     }
     return status;
 }
@@ -666,11 +662,9 @@ vx_status vxMatrixInverse(vx_matrix input, vx_matrix output) {
     if (ti == VX_TYPE_FLOAT32) {
         vx_float32 in[ri][ci];
         vx_float32 ou[ro][co];
-        vxAccessMatrix(input, in);
-        vxAccessMatrix(output, NULL);
+        vxReadMatrix(input, in);
         vxh_matrix_inverse_f32(ci, ri, ou, in);
-        vxCommitMatrix(output, ou);
-        vxCommitMatrix(input, NULL);
+        vxWriteMatrix(output, ou);
     }
     /*! \bug implement integer */
     return status;

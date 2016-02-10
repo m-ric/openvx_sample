@@ -62,16 +62,18 @@ vx_node vxFWriteImageNode(vx_graph graph, vx_image image, vx_char name[VX_MAX_FI
     vx_node node = 0;
     vx_context context = vxGetContext((vx_reference)graph);
     vx_array filepath = vxCreateArray(context, VX_TYPE_CHAR, VX_MAX_FILE_NAME);
-    status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
-    if (filepath && status == VX_SUCCESS)
-    {
-        vx_reference params[] = {
-            (vx_reference)image,
-            (vx_reference)filepath
-        };
+    if (vxGetStatus((vx_reference)filepath) == VX_SUCCESS) {
+        status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
+        if (status == VX_SUCCESS)
+        {
+            vx_reference params[] = {
+                (vx_reference)image,
+                (vx_reference)filepath
+            };
 
-        node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FWRITE_IMAGE, params, dimof(params));
-        vxReleaseArray(&filepath); /* the graph should add a reference to this, so we don't need it. */
+            node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FWRITE_IMAGE, params, dimof(params));
+            vxReleaseArray(&filepath); /* the graph should add a reference to this, so we don't need it. */
+        }
     }
     return node;
 }
@@ -82,16 +84,18 @@ vx_node vxFWriteArrayNode(vx_graph graph, vx_array arr, vx_char name[VX_MAX_FILE
     vx_node node = 0;
     vx_context context = vxGetContext((vx_reference)graph);
     vx_array filepath = vxCreateArray(context, VX_TYPE_CHAR, VX_MAX_FILE_NAME);
-    status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
-    if (filepath && status == VX_SUCCESS)
-    {
-        vx_reference params[] = {
-            (vx_reference)arr,
-            (vx_reference)filepath,
-        };
+    if (vxGetStatus((vx_reference)filepath) == VX_SUCCESS) {
+        status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
+        if (status == VX_SUCCESS)
+        {
+            vx_reference params[] = {
+                (vx_reference)arr,
+                (vx_reference)filepath,
+            };
 
-        node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FWRITE_ARRAY, params, dimof(params));
-        vxReleaseArray(&filepath); // the graph should add a reference to this, so we don't need it.
+            node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FWRITE_ARRAY, params, dimof(params));
+            vxReleaseArray(&filepath); // the graph should add a reference to this, so we don't need it.
+        }
     }
     return node;
 }
@@ -102,16 +106,18 @@ vx_node vxFReadImageNode(vx_graph graph, vx_char name[VX_MAX_FILE_NAME], vx_imag
     vx_node node = 0;
     vx_context context = vxGetContext((vx_reference)graph);
     vx_array filepath = vxCreateArray(context, VX_TYPE_CHAR, VX_MAX_FILE_NAME);
-    status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
-    if (filepath && status == VX_SUCCESS)
-    {
-        vx_reference params[] = {
-            (vx_reference)filepath,
-            (vx_reference)image,
-        };
+    if (vxGetStatus((vx_reference)filepath) == VX_SUCCESS) {
+        status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
+        if (status == VX_SUCCESS)
+        {
+            vx_reference params[] = {
+                (vx_reference)filepath,
+                (vx_reference)image,
+            };
 
-        node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FREAD_IMAGE, params, dimof(params));
-        vxReleaseArray(&filepath); // the graph should add a reference to this, so we don't need it.
+            node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FREAD_IMAGE, params, dimof(params));
+            vxReleaseArray(&filepath); // the graph should add a reference to this, so we don't need it.
+        }
     }
     return node;
 }
@@ -122,16 +128,18 @@ vx_node vxFReadArrayNode(vx_graph graph, vx_char name[VX_MAX_FILE_NAME], vx_arra
     vx_node node = 0;
     vx_context context = vxGetContext((vx_reference)graph);
     vx_array filepath = vxCreateArray(context, VX_TYPE_CHAR, VX_MAX_FILE_NAME);
-    status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
-    if (filepath && status == VX_SUCCESS)
-    {
-        vx_reference params[] = {
-            (vx_reference)filepath,
-            (vx_reference)arr,
-        };
+    if (vxGetStatus((vx_reference)filepath) == VX_SUCCESS) {
+        status = vxAddArrayItems(filepath, VX_MAX_FILE_NAME, &name[0], 0);
+        if (status == VX_SUCCESS)
+        {
+            vx_reference params[] = {
+                (vx_reference)filepath,
+                (vx_reference)arr,
+            };
 
-        node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FWRITE_ARRAY, params, dimof(params));
-        vxReleaseArray(&filepath); // the graph should add a reference to this, so we don't need it.
+            node = vxCreateNodeByStructure(graph, VX_KERNEL_DEBUG_FWRITE_ARRAY, params, dimof(params));
+            vxReleaseArray(&filepath); // the graph should add a reference to this, so we don't need it.
+        }
     }
     return node;
 }
@@ -210,7 +218,7 @@ vx_status vxuCopyImage(vx_context context, vx_image src, vx_image dst)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxCopyImageNode(graph, src, dst);
         if (node)
@@ -231,7 +239,7 @@ vx_status vxuCopyArray(vx_context context, vx_array src, vx_array dst)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxCopyArrayNode(graph, src, dst);
         if (node)
@@ -252,7 +260,7 @@ vx_status vxuFReadImage(vx_context context, vx_char name[VX_MAX_FILE_NAME], vx_i
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxFReadImageNode(graph, name, image);
         if (node)
@@ -273,7 +281,7 @@ vx_status vxuFWriteImage(vx_context context, vx_image image, vx_char name[VX_MAX
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxFWriteImageNode(graph, image, name);
         if (node)
@@ -294,7 +302,7 @@ vx_status vxuFWriteArray(vx_context context, vx_array arr, vx_char name[VX_MAX_F
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxFWriteArrayNode(graph, arr, name);
         if (node)
@@ -315,7 +323,7 @@ vx_status vxuFillImage(vx_context context, vx_uint32 value, vx_image output)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxFillImageNode(graph, value, output);
         if (node)
@@ -337,7 +345,7 @@ vx_status vxuCheckImage(vx_context context, vx_image input, vx_uint32 value, vx_
     vx_status status = VX_FAILURE;
     vx_scalar errs = vxCreateScalar(context, VX_TYPE_UINT32, numErrors);
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxCheckImageNode(graph, input, value, errs);
         if (node)
@@ -351,7 +359,7 @@ vx_status vxuCheckImage(vx_context context, vx_image input, vx_uint32 value, vx_
         }
         vxReleaseGraph(&graph);
     }
-    vxCommitScalarValue(errs, numErrors);
+    vxWriteScalarValue(errs, numErrors);
     vxReleaseScalar(&errs);
     return status;
 }
@@ -362,7 +370,7 @@ vx_status vxuCheckArray(vx_context context, vx_array input, vx_uint8 value, vx_u
     vx_status status = VX_FAILURE;
     vx_scalar errs = vxCreateScalar(context, VX_TYPE_UINT32, numErrors);
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxCheckArrayNode(graph, input, value, errs);
         if (node)
@@ -376,7 +384,7 @@ vx_status vxuCheckArray(vx_context context, vx_array input, vx_uint8 value, vx_u
         }
         vxReleaseGraph(&graph);
     }
-    vxCommitScalarValue(errs, numErrors);
+    vxWriteScalarValue(errs, numErrors);
     vxReleaseScalar(&errs);
     return status;
 }
@@ -386,7 +394,7 @@ vx_status vxuCompareImages(vx_context context, vx_image a, vx_image b, vx_uint32
     vx_status status = VX_FAILURE;
     vx_scalar diffs = vxCreateScalar(context, VX_TYPE_UINT32, numDiffs);
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxCompareImagesNode(graph, a, b, diffs);
         if (node)
@@ -400,7 +408,7 @@ vx_status vxuCompareImages(vx_context context, vx_image a, vx_image b, vx_uint32
         }
         vxReleaseGraph(&graph);
     }
-    vxCommitScalarValue(diffs, numDiffs);
+    vxWriteScalarValue(diffs, numDiffs);
     vxReleaseScalar(&diffs);
     return status;
 }
@@ -410,7 +418,7 @@ vx_status vxuCopyImageFromPtr(vx_context context, void *ptr, vx_image dst)
 {
     vx_status status = VX_FAILURE;
     vx_graph graph = vxCreateGraph(context);
-    if (graph)
+    if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
     {
         vx_node node = vxCopyImageFromPtrNode(graph, ptr, dst);
         if (node)

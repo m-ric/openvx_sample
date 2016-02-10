@@ -47,7 +47,7 @@
  */
 #define AREA_SCALE_ENABLE 0 /* TODO enable this again after changing implementation in kernels/c_model/c_scale.c */
 
-static vx_status VX_CALLBACK vxScaleImageKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxScaleImageKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -67,7 +67,7 @@ static vx_status VX_CALLBACK vxScaleImageKernel(vx_node node, vx_reference *para
     return VX_ERROR_INVALID_PARAMETERS;
 }
 
-static vx_status VX_CALLBACK vxScaleImageInitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxScaleImageInitializer(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 3)
@@ -141,7 +141,7 @@ static vx_status VX_CALLBACK vxScaleImageInputValidator(vx_node node, vx_uint32 
                 if (stype == VX_TYPE_ENUM)
                 {
                     vx_enum interp = 0;
-                    vxAccessScalarValue(scalar, &interp);
+                    vxReadScalarValue(scalar, &interp);
                     if ((interp == VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR) ||
                         (interp == VX_INTERPOLATION_TYPE_BILINEAR) ||
                         (interp == VX_INTERPOLATION_TYPE_AREA))
@@ -261,7 +261,7 @@ static vx_status VX_CALLBACK vxHalfscaleGaussianInputValidator(vx_node node, vx_
                 if (stype == VX_TYPE_INT32)
                 {
                     vx_int32 ksize = 0;
-                    vxAccessScalarValue(scalar, &ksize);
+                    vxReadScalarValue(scalar, &ksize);
                     if ((ksize == 3) || (ksize == 5))
                     {
                         status = VX_SUCCESS;
@@ -321,7 +321,7 @@ static vx_status VX_CALLBACK vxHalfscaleGaussianOutputValidator(vx_node node, vx
     return status;
 }
 
-static vx_status VX_CALLBACK vxHalfscaleGaussianKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxHalfscaleGaussianKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_FAILURE;
     if (num == 3)
@@ -345,20 +345,14 @@ static const vx_int16 gaussian5x5[5][5] =
 static vx_convolution vxCreateGaussian5x5Convolution(vx_context context)
 {
     vx_convolution conv = vxCreateConvolution(context, 5, 5);
-    vx_status status = vxAccessConvolutionCoefficients(conv, NULL);
-    if (status != VX_SUCCESS)
-    {
-        vxReleaseConvolution(&conv);
-        return NULL;
-    }
-    status = vxCommitConvolutionCoefficients(conv, (vx_int16 *)gaussian5x5);
+    vx_status status = vxWriteConvolutionCoefficients(conv, (vx_int16 *)gaussian5x5);
     if (status != VX_SUCCESS)
     {
         vxReleaseConvolution(&conv);
         return NULL;
     }
 
-    vxSetConvolutionAttribute(conv, VX_CONVOLUTION_ATTRIBUTE_SCALE, (void *)&gaussian5x5scale, sizeof(vx_uint32));
+    status = vxSetConvolutionAttribute(conv, VX_CONVOLUTION_ATTRIBUTE_SCALE, (void *)&gaussian5x5scale, sizeof(vx_uint32));
     if (status != VX_SUCCESS)
     {
         vxReleaseConvolution(&conv);
@@ -367,7 +361,7 @@ static vx_convolution vxCreateGaussian5x5Convolution(vx_context context)
     return conv;
 }
 
-static vx_status VX_CALLBACK vxHalfscaleGaussianInitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxHalfscaleGaussianInitializer(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 3)
@@ -379,10 +373,16 @@ static vx_status VX_CALLBACK vxHalfscaleGaussianInitializer(vx_node node, vx_ref
         vx_context context = vxGetContext((vx_reference)node);
         vx_graph graph = vxCreateGraph(context);
 
-        if (graph)
+        if (vxGetStatus((vx_reference)graph) == VX_SUCCESS)
         {
             vx_uint32 i;
-            vxAccessScalarValue((vx_scalar)parameters[2], &kernel_size);
+
+            /* We have a child-graph; we want to make sure the parent
+               graph is recognized as a valid scope for sake of virtual
+               image parameters. */
+            graph->parentGraph = node->graph;
+
+            vxReadScalarValue((vx_scalar)parameters[2], &kernel_size);
             if (kernel_size == 3 || kernel_size == 5)
             {
                 if (kernel_size == 5)
@@ -424,7 +424,7 @@ static vx_status VX_CALLBACK vxHalfscaleGaussianInitializer(vx_node node, vx_ref
     return status;
 }
 
-static vx_status VX_CALLBACK vxHalfscaleGaussianDeinitializer(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxHalfscaleGaussianDeinitializer(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     vx_status status = VX_ERROR_INVALID_PARAMETERS;
     if (num == 3)

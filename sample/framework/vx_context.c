@@ -95,7 +95,7 @@ static vx_bool vxWorkerNode(vx_threadpool_worker_t *worker)
         }
     }
 
-    if ((action == VX_ACTION_ABANDON) || (action == VX_ACTION_RESTART))
+    if (action == VX_ACTION_ABANDON)
     {
         ret = vx_false_e;
     }
@@ -212,11 +212,12 @@ VX_INT_API vx_bool vxIsValidBorderMode(vx_enum mode)
 }
 
 VX_INT_API vx_bool vxAddAccessor(vx_context context,
-                      vx_size size,
-                      vx_enum usage,
-                      void *ptr,
-                      vx_reference ref,
-                      vx_uint32 *pIndex)
+                                 vx_size size,
+                                 vx_enum usage,
+                                 void *ptr,
+                                 vx_reference ref,
+                                 vx_uint32 *pIndex,
+                                 void *extra_data)
 {
     vx_uint32 a;
     vx_bool worked = vx_false_e;
@@ -225,6 +226,7 @@ VX_INT_API vx_bool vxAddAccessor(vx_context context,
         if (context->accessors[a].used == vx_false_e)
         {
             VX_PRINT(VX_ZONE_CONTEXT, "Found open accessors[%u]\n", a);
+            /* Allocation requested */
             if (size > 0ul && ptr == NULL)
             {
                 context->accessors[a].ptr = malloc(size);
@@ -232,6 +234,7 @@ VX_INT_API vx_bool vxAddAccessor(vx_context context,
                     return vx_false_e;
                 context->accessors[a].allocated = vx_true_e;
             }
+            /* Pointer provided by the caller */
             else
             {
                 context->accessors[a].ptr = ptr;
@@ -240,6 +243,7 @@ VX_INT_API vx_bool vxAddAccessor(vx_context context,
             context->accessors[a].usage = usage;
             context->accessors[a].ref = ref;
             context->accessors[a].used = vx_true_e;
+            context->accessors[a].extra_data = extra_data;
             if (pIndex) *pIndex = a;
             worked = vx_true_e;
             break;
@@ -248,7 +252,7 @@ VX_INT_API vx_bool vxAddAccessor(vx_context context,
     return worked;
 }
 
-VX_INT_API vx_bool vxFindAccessor(vx_context context, void *ptr, vx_uint32 *pIndex)
+VX_INT_API vx_bool vxFindAccessor(vx_context context, const void *ptr, vx_uint32 *pIndex)
 {
     vx_uint32 a;
     vx_bool worked = vx_false_e;
@@ -276,6 +280,10 @@ VX_INT_API void vxRemoveAccessor(vx_context context, vx_uint32 index)
         {
             free(context->accessors[index].ptr);
         }
+        if (context->accessors[index].extra_data != NULL)
+        {
+            free(context->accessors[index].extra_data);
+        }
         memset(&context->accessors[index], 0, sizeof(vx_external_t));
         VX_PRINT(VX_ZONE_CONTEXT, "Removed accessors[%u]\n", index);
     }
@@ -289,6 +297,11 @@ static vx_context_t *single_context = NULL;
 static vx_sem_t context_lock;
 static vx_sem_t global_lock;
 
+/* Note: context is an exception in term of error management since it
+   returns 0 in case of error. This is due to the fact that error
+   objects belong to the context in this implementation. But since
+   vxGetStatus supports 0 in this implementation, this is consistent.
+*/
 VX_API_ENTRY vx_context VX_API_CALL vxCreateContext()
 {
     vx_context context = NULL;
@@ -532,7 +545,7 @@ VX_API_ENTRY vx_context VX_API_CALL vxGetContext(vx_reference reference)
     return context;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxSetContextAttribute(vx_context context, vx_enum attribute, void *ptr, vx_size size)
+VX_API_ENTRY vx_status VX_API_CALL vxSetContextAttribute(vx_context context, vx_enum attribute, const void *ptr, vx_size size)
 {
     vx_status status = VX_SUCCESS;
     if (vxIsValidContext(context) == vx_false_e)
@@ -748,11 +761,13 @@ VX_API_ENTRY vx_status VX_API_CALL vxQueryContext(vx_context context, vx_enum at
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxHint(vx_context context, vx_reference reference, vx_enum hint) {
+VX_API_ENTRY vx_status VX_API_CALL vxHint(vx_reference reference, vx_enum hint) {
     vx_status status = VX_SUCCESS;
-    if (vxIsValidContext(context) == vx_false_e)
-        return VX_ERROR_INVALID_REFERENCE;
+    vx_context context;
     if (vxIsValidReference(reference) == vx_false_e)
+        return VX_ERROR_INVALID_REFERENCE;
+    context = reference->context;
+    if (vxIsValidContext(context) == vx_false_e)
         return VX_ERROR_INVALID_REFERENCE;
     switch (hint)
     {
@@ -774,11 +789,13 @@ VX_API_ENTRY vx_status VX_API_CALL vxHint(vx_context context, vx_reference refer
     return status;
 }
 
-VX_API_ENTRY vx_status VX_API_CALL vxDirective(vx_context context, vx_reference reference, vx_enum directive) {
+VX_API_ENTRY vx_status VX_API_CALL vxDirective(vx_reference reference, vx_enum directive) {
     vx_status status = VX_SUCCESS;
-    if (vxIsValidContext(context) == vx_false_e)
-        return VX_ERROR_INVALID_REFERENCE;
+    vx_context context;
     if (vxIsValidReference(reference) == vx_false_e)
+        return VX_ERROR_INVALID_REFERENCE;
+    context = reference->context;
+    if (vxIsValidContext(context) == vx_false_e)
         return VX_ERROR_INVALID_REFERENCE;
     switch (directive)
     {

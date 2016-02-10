@@ -34,7 +34,7 @@
 #include <c_model.h>
 
 
-static vx_status VX_CALLBACK vxChannelExtractKernel(vx_node node, vx_reference *parameters, vx_uint32 num)
+static vx_status VX_CALLBACK vxChannelExtractKernel(vx_node node, const vx_reference *parameters, vx_uint32 num)
 {
     if (num == 3)
     {
@@ -110,7 +110,7 @@ static vx_status VX_CALLBACK vxChannelExtractInputValidator(vx_node node, vx_uin
                 vx_enum channel = 0;
                 vx_parameter param0;
 
-                vxAccessScalarValue(scalar, &channel);
+                vxReadScalarValue(scalar, &channel);
                 param0 = vxGetParameterByIndex(node, 0);
 
                 if (param0)
@@ -121,18 +121,34 @@ static vx_status VX_CALLBACK vxChannelExtractInputValidator(vx_node node, vx_uin
                     if (image)
                     {
                         vx_df_image format = VX_DF_IMAGE_VIRT;
-                        vx_enum max_channel;
                         vxQueryImage(image, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
 
-                        max_channel = (format == VX_DF_IMAGE_RGBX ? VX_CHANNEL_3 : VX_CHANNEL_2);
-
-                        if (VX_CHANNEL_0 <= channel && channel <= max_channel)
+                        status = VX_ERROR_INVALID_VALUE;
+                        switch (format)
                         {
-                            status = VX_SUCCESS;
-                        }
-                        else
-                        {
-                            status = VX_ERROR_INVALID_VALUE;
+                            case VX_DF_IMAGE_RGB:
+                            case VX_DF_IMAGE_RGBX:
+                                if ( (channel == VX_CHANNEL_R) ||
+                                     (channel == VX_CHANNEL_G) ||
+                                     (channel == VX_CHANNEL_B) ||
+                                     (channel == VX_CHANNEL_A) ) {
+                                    status = VX_SUCCESS;
+                                }
+                                break;
+                            case VX_DF_IMAGE_YUV4:
+                            case VX_DF_IMAGE_NV12:
+                            case VX_DF_IMAGE_NV21:
+                            case VX_DF_IMAGE_IYUV:
+                            case VX_DF_IMAGE_UYVY:
+                            case VX_DF_IMAGE_YUYV:
+                                if ( (channel == VX_CHANNEL_Y) ||
+                                     (channel == VX_CHANNEL_U) ||
+                                     (channel == VX_CHANNEL_V) ) {
+                                    status = VX_SUCCESS;
+                                }
+                                break;
+                            default:
+                                break;
                         }
 
                         vxReleaseImage(&image);
@@ -171,7 +187,7 @@ static vx_status VX_CALLBACK vxChannelExtractOutputValidator(vx_node node, vx_ui
             vx_enum channel = 0;
             vxQueryParameter(param0, VX_PARAMETER_ATTRIBUTE_REF, &input, sizeof(input));
             vxQueryParameter(param1, VX_PARAMETER_ATTRIBUTE_REF, &chan, sizeof(chan));
-            vxAccessScalarValue(chan, &channel);
+            vxReadScalarValue(chan, &channel);
 
             if ((input) && (chan))
             {
@@ -182,7 +198,7 @@ static vx_status VX_CALLBACK vxChannelExtractOutputValidator(vx_node node, vx_ui
                 vxQueryImage(input, VX_IMAGE_ATTRIBUTE_HEIGHT, &height, sizeof(height));
                 vxQueryImage(input, VX_IMAGE_ATTRIBUTE_FORMAT, &format, sizeof(format));
 
-                if (channel != VX_CHANNEL_0)
+                if (channel != VX_CHANNEL_Y)
                     switch (format) {
                         case VX_DF_IMAGE_IYUV:
                         case VX_DF_IMAGE_NV12:

@@ -24,7 +24,13 @@
 #
 # Global setup file for OpenVX CMake
 #
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 2.8.9)
+
+file(READ "${CMAKE_SOURCE_DIR}/VERSION" OPENVX_VERSION)
+string(STRIP "${OPENVX_VERSION}" OPENVX_VERSION)
+set(OPENVX_VERSION ${OPENVX_VERSION} CACHE INTERNAL "" FORCE)
+
+message(STATUS "===== OpenVX version: ${OPENVX_VERSION} =====")
 
 # CMAKE variables
 set( CMAKE_MODULE_PATH
@@ -70,7 +76,10 @@ if (UNIX OR ANDROID)
     set( EXPERIMENTAL_USE_DOT ON )
 endif (UNIX OR ANDROID)
 
-add_definitions( -DOPENVX_BUILDING -DOPENVX_USE_SMP)
+add_definitions( -DOPENVX_BUILDING ) 
+if (OPENVX_USE_SMP)
+    add_definitions( -DOPENVX_USE_SMP )
+endif (OPENVX_USE_SMP)
 if (OPENVX_USE_TILING)
     add_definitions( -DOPENVX_USE_TILING )
 endif (OPENVX_USE_TILING)
