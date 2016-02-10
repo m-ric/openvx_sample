@@ -38,7 +38,7 @@
 static const vx_char name[VX_MAX_TARGET_NAME] = "pc.opencl";
 
 /*! \brief Prototype for assigning to kernel */
-static vx_status vxclCallOpenCLKernel(vx_node node, const vx_reference *parameters, vx_uint32 num);
+vx_status vxclCallOpenCLKernel(vx_node node, vx_reference *parameters, vx_uint32 num);
 
 static vx_cl_kernel_description_t *cl_kernels[] = {
     &box3x3_clkernel,
