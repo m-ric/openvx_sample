@@ -64,6 +64,15 @@ void usage(const char *prg) {
     printf("USAGE: %s <input-img> <output-img>\n", prg);
 }
 
+void axPrintPerf(const char *name, vx_perf_t *perf) {
+    printf("%10s (ms): sum:%12.3f avg:%12.3f min:%12.3f max:%12.3f num:%3lu\n", name,
+            (vx_float32)perf->sum/PERF_TIMEUNIT,
+            (vx_float32)perf->avg/PERF_TIMEUNIT,
+            (vx_float32)perf->min/PERF_TIMEUNIT,
+            (vx_float32)perf->max/PERF_TIMEUNIT,
+            perf->num);
+}
+
 int main(int argc, char **argv) {
     vx_context ctx = NULL;
     vx_status ret = VX_FAILURE;
@@ -166,22 +175,11 @@ int main(int argc, char **argv) {
     vx_perf_t perf_graph;
 
     vxQueryGraph(graph, VX_GRAPH_ATTRIBUTE_PERFORMANCE, &perf_graph, sizeof(perf_graph));
-    printf("%10s (ms): sum:%12.3f avg:%12.3f min:%12.3f max:%12.3f num:%3lu\n",
-            "Graph",
-            (vx_float32)perf_graph.sum/PERF_TIMEUNIT,
-            (vx_float32)perf_graph.avg/PERF_TIMEUNIT,
-            (vx_float32)perf_graph.min/PERF_TIMEUNIT,
-            (vx_float32)perf_graph.max/PERF_TIMEUNIT, perf_graph.num);
+    axPrintPerf("Graph", &perf_graph);
 
     for (i = 0; i < dimof(nodes); ++i) {
         vxQueryNode(nodes[i], VX_NODE_ATTRIBUTE_PERFORMANCE, &perf_node, sizeof(perf_node));
-        printf("%10s (ms): sum:%12.3f avg:%12.3f min:%12.3f max:%12.3f num:%3lu\n", axnodes[i].name,
-                (vx_float32)perf_node.sum/PERF_TIMEUNIT,
-                (vx_float32)perf_node.avg/PERF_TIMEUNIT,
-                (vx_float32)perf_node.min/PERF_TIMEUNIT,
-                (vx_float32)perf_node.max/PERF_TIMEUNIT,
-                perf_node.num
-                );
+        axPrintPerf(axnodes[i].name, &perf_node);
     }
 
 relNod:
