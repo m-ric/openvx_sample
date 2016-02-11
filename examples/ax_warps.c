@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
     vx_context ctx = NULL;
     vx_status ret = VX_FAILURE;
     vx_uint32 width = IMAGE_WIDTH, height = IMAGE_HEIGHT;
-    vx_image src = NULL, dst = NULL;
     vx_graph graph = NULL;
     int i;
 
@@ -91,23 +90,15 @@ int main(int argc, char **argv) {
         goto end;
     }
 
-    // create source image
-    src = vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8);
-    ret = vxGetStatus((vx_reference)src);
-    if (ret != VX_SUCCESS) {
-        fprintf(stderr, "error: vxCreateImage src %d\n", ret);
-        goto relCtx;
-    }
+    // create images
+    vx_image images[] = {
+        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
+        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
+        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
+        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
+    };
 
-    // create destination image
-    dst = vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8);
-    ret = vxGetStatus((vx_reference)dst);
-    if (ret != VX_SUCCESS) {
-        fprintf(stderr, "error: vxCreateImage dst %d\n", ret);
-        goto relImg;
-    }
-
-    // required in order to use vxFReadImageNode
+    // load vxFReadImageNode kernel
     ret = vxLoadKernels(ctx, "openvx-debug");
     ret |= vxLoadKernels(ctx, "openvx-extras");
 
@@ -136,15 +127,21 @@ int main(int argc, char **argv) {
 
     // the pipeline definition
     vx_node nodes[] = {
-        vxFReadImageNode(graph, "lena_512x512.pgm", src),
-        vxWarpPerspectiveNode(graph, src, matrix,
-            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, dst),
-        vxFWriteImageNode(graph, dst, dstfilename),
+        vxFReadImageNode(graph, srcfilename, images[0]),
+        vxWarpPerspectiveNode(graph, images[0], matrix,
+            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[1]),
+        vxWarpPerspectiveNode(graph, images[1], matrix,
+            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[2]),
+        vxWarpPerspectiveNode(graph, images[2], matrix,
+            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[3]),
+        vxFWriteImageNode(graph, images[3], dstfilename),
     };
     CHECK_ALL_ITEMS(nodes, i, ret, relMat);
 
     ax_node_t axnodes[] = {
         { "Read" },
+        { "Warp3x3" },
+        { "Warp3x3" },
         { "Warp3x3" },
         { "Write" },
     };
@@ -157,7 +154,7 @@ int main(int argc, char **argv) {
 
     ret = vxVerifyGraph(graph);
     if (ret != VX_SUCCESS) {
-        fprintf(stderr, "error: vxWarpPerspectiveNode %d\n", ret);
+        fprintf(stderr, "error: vxVerifyGraph %d\n", ret);
         goto relNod;
     }
 
@@ -183,9 +180,9 @@ relMat:
     vxReleaseMatrix(&matrix);
     vxReleaseGraph(&graph);
 relImg:
-    vxReleaseImage(&src);
-    vxReleaseImage(&dst);
-relCtx:
+    for (i = 0; i < dimof(images); ++i) {
+        vxReleaseImage(&images[i]);
+    }
     ret = vxReleaseContext(&ctx);
     if (ret != VX_SUCCESS) {
         fprintf(stderr, "error: vxReleaseContext %d\n", ret);
