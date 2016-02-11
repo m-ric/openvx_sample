@@ -98,6 +98,8 @@ int main(int argc, char **argv) {
         vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
     };
 
+    printf("created %lu images %u x %u\n", dimof(images), width, height);
+
     // load vxFReadImageNode kernel
     ret = vxLoadKernels(ctx, "openvx-debug");
     ret |= vxLoadKernels(ctx, "openvx-extras");
@@ -122,8 +124,6 @@ int main(int argc, char **argv) {
 
     vx_matrix matrix = vxCreateMatrix(ctx, VX_TYPE_FLOAT32, 3, 3);
     vxWriteMatrix(matrix, mat);
-
-    vx_perf_t perf;
 
     // the pipeline definition
     vx_node nodes[] = {
@@ -152,23 +152,35 @@ int main(int argc, char **argv) {
 //        goto relGraph;
 //    }
 
+    // validate pipeline
     ret = vxVerifyGraph(graph);
     if (ret != VX_SUCCESS) {
         fprintf(stderr, "error: vxVerifyGraph %d\n", ret);
         goto relNod;
     }
 
+    // run pipeline!
     ret = vxProcessGraph(graph);
 
-    vxQueryGraph(graph, VX_GRAPH_ATTRIBUTE_PERFORMANCE, &perf, sizeof(perf));
+    vx_perf_t perf_node;
+    vx_perf_t perf_graph;
+
+    vxQueryGraph(graph, VX_GRAPH_ATTRIBUTE_PERFORMANCE, &perf_graph, sizeof(perf_graph));
+    printf("%10s (ms): sum:%12.3f avg:%12.3f min:%12.3f max:%12.3f num:%3lu\n",
+            "Graph",
+            (vx_float32)perf_graph.sum/PERF_TIMEUNIT,
+            (vx_float32)perf_graph.avg/PERF_TIMEUNIT,
+            (vx_float32)perf_graph.min/PERF_TIMEUNIT,
+            (vx_float32)perf_graph.max/PERF_TIMEUNIT, perf_graph.num);
+
     for (i = 0; i < dimof(nodes); ++i) {
-        vxQueryNode(nodes[i], VX_NODE_ATTRIBUTE_PERFORMANCE, &perf, sizeof(perf));
+        vxQueryNode(nodes[i], VX_NODE_ATTRIBUTE_PERFORMANCE, &perf_node, sizeof(perf_node));
         printf("%10s (ms): sum:%12.3f avg:%12.3f min:%12.3f max:%12.3f num:%3lu\n", axnodes[i].name,
-                (vx_float32)perf.sum/PERF_TIMEUNIT,
-                (vx_float32)perf.avg/PERF_TIMEUNIT,
-                (vx_float32)perf.min/PERF_TIMEUNIT,
-                (vx_float32)perf.max/PERF_TIMEUNIT,
-                perf.num
+                (vx_float32)perf_node.sum/PERF_TIMEUNIT,
+                (vx_float32)perf_node.avg/PERF_TIMEUNIT,
+                (vx_float32)perf_node.min/PERF_TIMEUNIT,
+                (vx_float32)perf_node.max/PERF_TIMEUNIT,
+                perf_node.num
                 );
     }
 
