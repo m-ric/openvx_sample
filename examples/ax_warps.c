@@ -34,8 +34,8 @@
 #include <VX/vx_lib_debug.h>
 #include <VX/vx_helper.h>
 
-#define IMAGE_WIDTH  512
-#define IMAGE_HEIGHT 512
+#define IMAGE_WIDTH  4160
+#define IMAGE_HEIGHT 2774
 
 #define PERF_MILLISECOND 10000000.0f
 #define PERF_MICROSECOND 10000.0f
