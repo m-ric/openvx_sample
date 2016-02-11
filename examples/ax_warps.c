@@ -36,7 +36,7 @@
 #include <VX/vx_helper.h>
 
 #define IMAGE_WIDTH  4160
-#define IMAGE_HEIGHT 2774
+#define IMAGE_HEIGHT 2340
 #define AX_NUM_WARPS 10
 
 #define PERF_MILLISECOND 1000000.0f
