@@ -37,6 +37,11 @@
 #define IMAGE_WIDTH  512
 #define IMAGE_HEIGHT 512
 
+#define PERF_MILLISECOND 10000000.0f
+#define PERF_MICROSECOND 10000.0f
+#define PERF_NANOSECOND  10.0f
+#define PERF_TIMEUNIT    PERF_MILLISECOND
+
 #define CHECK_ALL_ITEMS(array, iter, status, label) { \
     status = VX_SUCCESS; \
     for ((iter) = 0; (iter) < dimof(array); (iter)++) { \
@@ -50,6 +55,10 @@
         goto label; \
     } \
 }
+
+typedef struct ax_node {
+    char name[256];
+} ax_node_t;
 
 void usage(const char *prg) {
     printf("USAGE: %s <input-img>\n", prg);
@@ -123,7 +132,9 @@ int main(int argc, char **argv) {
     vx_matrix matrix = vxCreateMatrix(ctx, VX_TYPE_FLOAT32, 3, 3);
     vxWriteMatrix(matrix, mat);
 
-    // the pipeline ordering
+    vx_perf_t perf;
+
+    // the pipeline definition
     vx_node nodes[] = {
         vxFReadImageNode(graph, "lena_512x512.pgm", src),
         vxWarpPerspectiveNode(graph, src, matrix,
@@ -131,6 +142,12 @@ int main(int argc, char **argv) {
         vxFWriteImageNode(graph, dst, dstfilename),
     };
     CHECK_ALL_ITEMS(nodes, i, ret, relMat);
+
+    ax_node_t axnodes[] = {
+        { "Read" },
+        { "Warp3x3" },
+        { "Write" },
+    };
 
 //    ret = vx_useImmediateBorderMode(ctx, node[1]);
 //    if (ret != VX_SUCCESS) {
@@ -145,6 +162,18 @@ int main(int argc, char **argv) {
     }
 
     ret = vxProcessGraph(graph);
+
+    vxQueryGraph(graph, VX_GRAPH_ATTRIBUTE_PERFORMANCE, &perf, sizeof(perf));
+    for (i = 0; i < dimof(nodes); ++i) {
+        vxQueryNode(nodes[i], VX_NODE_ATTRIBUTE_PERFORMANCE, &perf, sizeof(perf));
+        printf("%10s (ms): sum:%12.3f avg:%12.3f min:%12.3f max:%12.3f num:%3lu\n", axnodes[i].name,
+                (vx_float32)perf.sum/PERF_TIMEUNIT,
+                (vx_float32)perf.avg/PERF_TIMEUNIT,
+                (vx_float32)perf.min/PERF_TIMEUNIT,
+                (vx_float32)perf.max/PERF_TIMEUNIT,
+                perf.num
+                );
+    }
 
 relNod:
     for (i = 0; i < dimof(nodes); ++i) {
