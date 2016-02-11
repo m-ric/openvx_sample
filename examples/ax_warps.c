@@ -29,6 +29,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <VX/vx.h>
 #include <VX/vxu.h>
 #include <VX/vx_lib_debug.h>
@@ -36,6 +37,7 @@
 
 #define IMAGE_WIDTH  4160
 #define IMAGE_HEIGHT 2774
+#define AX_NUM_WARPS 10
 
 #define PERF_MILLISECOND 1000000.0f
 #define PERF_MICROSECOND 1000.0f
@@ -100,12 +102,10 @@ int main(int argc, char **argv) {
     }
 
     // create images
-    vx_image images[] = {
-        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
-        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
-        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
-        vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8),
-    };
+    vx_image images[AX_NUM_WARPS + 1];
+    for (i = 0; i < (AX_NUM_WARPS + 1); ++i) {
+        images[i] = vxCreateImage(ctx, width, height, VX_DF_IMAGE_U8);
+    }
 
     printf("created %lu images %u x %u\n", dimof(images), width, height);
 
@@ -135,25 +135,21 @@ int main(int argc, char **argv) {
     vxWriteMatrix(matrix, mat);
 
     // the pipeline definition
-    vx_node nodes[] = {
-        vxFReadImageNode(graph, srcfilename, images[0]),
-        vxWarpPerspectiveNode(graph, images[0], matrix,
-            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[1]),
-        vxWarpPerspectiveNode(graph, images[1], matrix,
-            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[2]),
-        vxWarpPerspectiveNode(graph, images[2], matrix,
-            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[3]),
-        vxFWriteImageNode(graph, images[3], dstfilename),
-    };
+    vx_node nodes[AX_NUM_WARPS + 2];
+    nodes[0] = vxFReadImageNode(graph, srcfilename, images[0]);
+    nodes[AX_NUM_WARPS + 1] = vxFWriteImageNode(graph, images[AX_NUM_WARPS], dstfilename);
+    for (i = 0; i < AX_NUM_WARPS; ++i) {
+        nodes[i + 1] = vxWarpPerspectiveNode(graph, images[i], matrix,
+            VX_INTERPOLATION_TYPE_NEAREST_NEIGHBOR, images[i + 1]);
+    }
     CHECK_ALL_ITEMS(nodes, i, ret, relMat);
 
-    ax_node_t axnodes[] = {
-        { "Read" },
-        { "Warp3x3" },
-        { "Warp3x3" },
-        { "Warp3x3" },
-        { "Write" },
-    };
+    ax_node_t axnodes[AX_NUM_WARPS + 2];
+    strcpy(axnodes[0].name, "Read");
+    strcpy(axnodes[AX_NUM_WARPS + 1].name, "Write");
+    for (i = 0; i < AX_NUM_WARPS; ++i) {
+        strcpy(axnodes[i + 1].name, "Warp3x3");
+    }
 
 //    ret = vx_useImmediateBorderMode(ctx, node[1]);
 //    if (ret != VX_SUCCESS) {
