@@ -61,7 +61,7 @@ typedef struct ax_node {
 } ax_node_t;
 
 void usage(const char *prg) {
-    printf("USAGE: %s <input-img>\n", prg);
+    printf("USAGE: %s <input-img> <output-img>\n", prg);
 }
 
 int main(int argc, char **argv) {
@@ -71,14 +71,14 @@ int main(int argc, char **argv) {
     vx_graph graph = NULL;
     int i;
 
-    if (argc < 2) {
+    if (argc < 3) {
         usage(argv[0]);
         ret = -1;
         goto end;
     }
 
     vx_char *srcfilename = argv[1];
-    vx_char *dstfilename = "./lena_out.pgm";
+    vx_char *dstfilename = argv[2];
     printf("src img: %s\n", srcfilename);
     printf("dst img: %s\n", dstfilename);
 
