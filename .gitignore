@@ -2,3 +2,5 @@ ID
 TAGS.LST
 cscope.out
 tags
+build/
+out/
