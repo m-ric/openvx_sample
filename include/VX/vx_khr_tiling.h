@@ -47,7 +47,7 @@
 #if defined(_WIN32)
 #define VX_RESTRICT
 #else
-#if defined(__cplusplus) || defined(ANDROID)
+#if defined(__cplusplus) || defined(ANDROID) || defined(__linux__)
 #define VX_RESTRICT     __restrict
 #else
 #define VX_RESTRICT     restrict
